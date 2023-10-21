@@ -2,7 +2,9 @@
 #define SERVER_HPP
 
 #include <iostream>
+#include <sys/poll.h>
 #include <vector>
+#include <map>
 #include <cstring>
 #include <cstdlib>
 #include <unistd.h>
@@ -15,12 +17,13 @@
 #include <poll.h>
 
 
-#include "Client.hpp"
 // #include <string.h>
+
 // #include <sys/types.h>
 // #include <sys/socket.h>
 
-
+class Channel;
+class Client;
 
 class Server {
 	private:
@@ -30,7 +33,10 @@ class Server {
 		struct sockaddr_in _addr;
 		struct pollfd _fds[10];
 		std::string _password;
-		std::vector<Client> list;
+		// std::vector<Client> list;
+		std::map<int, Client> list;
+		std::vector<Channel> _channels;
+
 		void setAddrInfo();
 		void bindPort();
 	public:
@@ -39,8 +45,11 @@ class Server {
 		~Server();
 		void launch();
 		void setPort(short _port);
+		bool addClient(struct pollfd _poll);
 		
 };
 
+#include "Channel.hpp"
+#include "Client.hpp"
 
 #endif
