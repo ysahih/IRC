@@ -24,13 +24,13 @@
 
 class Server {
 	private:
-		int _socketfd;
 		// std::string _name;
-		struct sockaddr_in _addr;
-		struct pollfd fds[10];
-		std::vector<Client> list;
-		std::string _password;
+		int _socketfd;
 		short	_port;
+		struct sockaddr_in _addr;
+		struct pollfd _fds[10];
+		std::string _password;
+		std::vector<Client> list;
 		void setAddrInfo();
 		void bindPort();
 	public:
