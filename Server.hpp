@@ -45,6 +45,8 @@ class Server {
 		Server();
 		~Server();
 		void sendMessage(int fd, const char *msg);
+		
+		void privateMsg(int fd, std::stringstream& iss);
 		int findClient(std::string name);
 		void setNick(int fd, std::stringstream& iss);
 		void setUser(int fd, std::stringstream& iss);

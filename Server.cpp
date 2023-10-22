@@ -77,24 +77,6 @@ bool Server::addClient(struct pollfd _poll)
     // std::cout << "pass correct!" << std::endl;;
 }
 
-
-int Server::findClient(std::string name){
-    std::map<int, Client>::iterator it = this->list.begin();
-    for (; it != this->list.end(); it++){
-        if (it->second.getNick() == name)
-            return it->first;
-    }
-    throw "Client not found\n";
-}
-
-
-void Server::sendMessage(int fd, const char *msg){
-
-    int bytesSent = send(fd, msg, strlen(msg), 0); //!!use of c functions
-    if (bytesSent < 0) 
-        throw "Failed to send response";
-}
-
 void Server::launch(){
 
     this->setSocket();
@@ -107,7 +89,8 @@ void Server::launch(){
   
     int fdnbr = 1;
     
-    
+    std::string a; 
+    a.find_first_not_of(' ');
     while (true) {
         if (poll(this->_fds, 11, -1) < 0)
             throw "";
