@@ -4,5 +4,8 @@ int main()
 {
     Server server;
     server.setPort(8080);
-    server.launch();
+    try {
+        server.launch();
+    }catch (const char* s)  {std::cout << s << std::endl; }
+
 }
