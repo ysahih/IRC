@@ -19,3 +19,7 @@ void Client::setUser(std::string name){this->_username = name;}
 
 
 bool Client::is_authenticate(){return this->_authenticate;}
+
+std::string Client::getNick(){return this->_nickname;}
+std::string Client::getUser(){return this->_username;}
+int Client::getFd(){return this->_sockfd;}

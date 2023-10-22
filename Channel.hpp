@@ -4,19 +4,22 @@
 #include "Server.hpp"
 #include <vector>
 
-//!not implemented
 class Channel {
 	private:
 		std::string _name;
-		std::map<std::string, Client> _list;
+		std::map<int, Client> _list;
 		int operator_fd;
 	public:
+		Channel(){};
 		Channel(std::string name);
+		void setOperator(int fd);
 		bool clientExist(Client A);
 		void sendMessage(std::string mssg);
 		void addClient(Client A);
 		void kickClient(std::string name);
 };
+
+
 
 
 #endif

@@ -78,7 +78,17 @@ bool Server::addClient(struct pollfd _poll)
 }
 
 
-void sendMessage(int fd, const char *msg){
+int Server::findClient(std::string name){
+    std::map<int, Client>::iterator it = this->list.begin();
+    for (; it != this->list.end(); it++){
+        if (it->second.getNick() == name)
+            return it->first;
+    }
+    throw "Client not found\n";
+}
+
+
+void Server::sendMessage(int fd, const char *msg){
 
     int bytesSent = send(fd, msg, strlen(msg), 0); //!!use of c functions
     if (bytesSent < 0) 
@@ -109,7 +119,7 @@ void Server::launch(){
                 std::map<int, Client>::iterator it = this->list.find(this->_fds[i].fd);
                 if (it == list.end()){
                     if (this->addClient(this->_fds[i]) == 0){ //
-                        sendMessage(this->_fds[i].fd, "Error(): PASS <password>"); // send a message with the cmds form
+                        this->sendMessage(this->_fds[i].fd, "Error(): PASS <password>"); // send a message with the cmds form
                     }
                 }
                 else { // here the client is already within the server;
@@ -121,8 +131,10 @@ void Server::launch(){
                         throw "Failed to receive data";
                     }
                     buffer[bytesRead] = 0x0;
-                    this->parse(buffer);
-                    std::cout << "Received message: " << buffer << std::endl;
+                    try{
+                        this->parse(this->_fds[i].fd, buffer);
+                    }catch(const char *s){this->sendMessage(this->_fds[i].fd, s);}                    
+                    // std::cout << "Received message: " << buffer << std::endl;
                 }
         
             }

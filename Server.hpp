@@ -5,6 +5,7 @@
 #include <sys/poll.h>
 #include <vector>
 #include <map>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include <unistd.h>
@@ -35,7 +36,7 @@ class Server {
 		std::string _password;
 		// std::vector<Client> list;
 		std::map<int, Client> list;
-		std::vector<Channel> _channels;
+		std::map<std::string, Channel> _channels;
 
 		void setAddrInfo();
 		void bindPort();
@@ -43,8 +44,13 @@ class Server {
 		void setSocket();
 		Server();
 		~Server();
+		void sendMessage(int fd, const char *msg);
+		int findClient(std::string name);
+		void setNick(int fd, std::stringstream& iss);
+		void setUser(int fd, std::stringstream& iss);
+		void joinChannel(int fd, std::stringstream& iss);
 		void launch();
-		void parse();
+		void parse(int fd, std::string line);
 		void setPort(short _port);
 		bool addClient(struct pollfd _poll);
 		
