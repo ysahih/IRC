@@ -44,6 +44,7 @@ class Server {
 		Server();
 		~Server();
 		void launch();
+		void parse();
 		void setPort(short _port);
 		bool addClient(struct pollfd _poll);
 		
