@@ -33,6 +33,9 @@ class Client {
         void initClient(struct pollfd _poll);
         void setUser(std::string name);
         void setNick(std::string name);
+        std::string getNick();
+        std::string getUser();
+        int getFd();
 
 };
 

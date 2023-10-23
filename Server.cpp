@@ -77,14 +77,6 @@ bool Server::addClient(struct pollfd _poll)
     // std::cout << "pass correct!" << std::endl;;
 }
 
-
-void sendMessage(int fd, const char *msg){
-
-    int bytesSent = send(fd, msg, strlen(msg), 0); //!!use of c functions
-    if (bytesSent < 0) 
-        throw "Failed to send response";
-}
-
 void Server::launch(){
 
     this->setSocket();
@@ -97,7 +89,8 @@ void Server::launch(){
   
     int fdnbr = 1;
     
-    
+    std::string a; 
+    a.find_first_not_of(' ');
     while (true) {
         if (poll(this->_fds, 11, -1) < 0)
             throw "";
@@ -109,7 +102,7 @@ void Server::launch(){
                 std::map<int, Client>::iterator it = this->list.find(this->_fds[i].fd);
                 if (it == list.end()){
                     if (this->addClient(this->_fds[i]) == 0){ //
-                        sendMessage(this->_fds[i].fd, "Error(): PASS <password>"); // send a message with the cmds form
+                        this->sendMessage(this->_fds[i].fd, "Error(): PASS <password>"); // send a message with the cmds form
                     }
                 }
                 else { // here the client is already within the server;
@@ -121,8 +114,10 @@ void Server::launch(){
                         throw "Failed to receive data";
                     }
                     buffer[bytesRead] = 0x0;
-                    this->parse(buffer);
-                    std::cout << "Received message: " << buffer << std::endl;
+                    try{
+                        this->parse(this->_fds[i].fd, buffer);
+                    }catch(const char *s){this->sendMessage(this->_fds[i].fd, s);}                    
+                    // std::cout << "Received message: " << buffer << std::endl;
                 }
         
             }
