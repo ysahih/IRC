@@ -32,7 +32,7 @@ class Server {
 		int _socketfd;
 		short	_port;
 		struct sockaddr_in _addr;
-		struct pollfd _fds[10];
+		struct pollfd _fds[1024];
 		std::string _password;
 		// std::vector<Client> list;
 		std::map<int, Client> list;
@@ -44,11 +44,14 @@ class Server {
 		void setSocket();
 		Server();
 		~Server();
-		void sendMessage(int fd, const char *msg);
+		void sendMessage(int fd, std::string msg);
 		
 		void privateMsg(int fd, std::stringstream& iss);
 		int findClient(std::string name);
 		void setNick(int fd, std::stringstream& iss);
+		void kick(int fd, std::stringstream& iss);
+		void invite(int fd, std::stringstream& iss);
+		void topic(int fd, std::stringstream& iss);
 		void setUser(int fd, std::stringstream& iss);
 		void joinChannel(int fd, std::stringstream& iss);
 		void launch();

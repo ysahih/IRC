@@ -17,25 +17,25 @@
 
 
 class Client {
-    private:
-        int _sockfd;
-        struct pollfd fd;
-        //
-        struct sockaddr_in _addr;
-        std::string _username;
-        std::string _nickname;
-        bool _authenticate;
+	private:
+		int _sockfd;
+		struct pollfd fd;
+		//
+		struct sockaddr_in _addr;
+		std::string _username;
+		std::string _nickname;
+		bool _authenticate;
 
-    public:
-        Client();
-        void authenticate();
-        bool is_authenticate();
-        void initClient(struct pollfd _poll);
-        void setUser(std::string name);
-        void setNick(std::string name);
-        std::string getNick();
-        std::string getUser();
-        int getFd();
+	public:
+		Client();
+		void authenticate();
+		bool is_authenticate();
+		void initClient(struct pollfd _poll);
+		void setUser(std::string name);
+		void setNick(std::string name);
+		std::string getNick();
+		std::string getUser();
+		int getFd();
 
 };
 

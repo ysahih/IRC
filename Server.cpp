@@ -24,7 +24,6 @@ void Server::setSocket() {
         throw "Failed to set socket to non-blocking mode";
 }
 
-
 void Server::setAddrInfo() {
 
 
@@ -48,8 +47,8 @@ void Server::bindPort() {
 bool Server::addClient(struct pollfd _poll)
 {
     Client newClient;
-    //initialize client attribute...
     newClient.initClient(_poll);
+
     char buffer[1024];
     int bytesRead = recv(_poll.fd, buffer, 1024, 0);
     buffer[bytesRead] = 0x0;
@@ -58,23 +57,22 @@ bool Server::addClient(struct pollfd _poll)
             return 0;
         throw "Failed to receive data";
     }
-    std::string pass(buffer);
-    if (pass[pass.length() - 1] == '\n')
-        pass.erase(pass.length() - 1);
+    std::string line;
+    line.assign(buffer, bytesRead);
+    std::stringstream iss(line);
+    std::string pass;
+    iss >> pass;
+    if (pass != "PASS")
+        return 0;
+    iss >> pass;
     if (pass != this->_password)
-    {
-        
-    // std::string pass2(buffer);
-    // std::cout << (int) pass2[pass2.length() - 1] << std::endl;
-        return 0; 
-    }
+        return 0;
     this->list[_poll.fd] = newClient;
     const char* response = "Client added without authentication\n";
-    int bytesSent = send(_poll.fd, response, strlen(response), 0); //!!use of c functions
+    int bytesSent = send(_poll.fd, response, strlen(response), 0); //!use of c functions
     if (bytesSent < 0) 
         throw "Failed to send response";
     return 1;
-    // std::cout << "pass correct!" << std::endl;;
 }
 
 void Server::launch(){
@@ -92,7 +90,7 @@ void Server::launch(){
     std::string a; 
     a.find_first_not_of(' ');
     while (true) {
-        if (poll(this->_fds, 11, -1) < 0)
+        if (poll(this->_fds, 1024, -1) < 0)
             throw "";
         for (int i = 1; i < fdnbr; i++){ /*through list of clients*/
             if (this->_fds[i].revents == POLLIN) { // check if there is an event on one of our clients.
@@ -101,23 +99,24 @@ void Server::launch(){
                 // otherwise compare the password and add them/;
                 std::map<int, Client>::iterator it = this->list.find(this->_fds[i].fd);
                 if (it == list.end()){
-                    if (this->addClient(this->_fds[i]) == 0){ //
-                        this->sendMessage(this->_fds[i].fd, "Error(): PASS <password>"); // send a message with the cmds form
-                    }
+                    if (this->addClient(this->_fds[i]) == 0)
+                        this->sendMessage(this->_fds[i].fd, "Error(): PASS <password>\n"); // send a message with the cmds form
                 }
                 else { // here the client is already within the server;
                     char buffer[1024];
                     int bytesRead = recv(_fds[i].fd, buffer, 1024, 0);
+                    
                     if (bytesRead <= 0){
                         if (errno == EWOULDBLOCK || errno == EAGAIN)
                             continue;
                         throw "Failed to receive data";
                     }
-                    buffer[bytesRead] = 0x0;
+                    std::string line;
+                    line.assign(buffer, bytesRead);
+                    // buffer[bytesRead] = 0x0;
                     try{
-                        this->parse(this->_fds[i].fd, buffer);
-                    }catch(const char *s){this->sendMessage(this->_fds[i].fd, s);}                    
-                    // std::cout << "Received message: " << buffer << std::endl;
+                        this->parse(this->_fds[i].fd, line);
+                    }catch(const char *s){this->sendMessage(this->_fds[i].fd, s);}
                 }
         
             }
