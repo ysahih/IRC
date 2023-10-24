@@ -64,6 +64,7 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 	iss >> name;
 	iss >> password;
 
+
 	if(!it->second.is_authenticate())
 		throw "not authenticate\n";
 	if (name.empty())
@@ -87,7 +88,7 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 				throw "channel is invite only\n";
 			if(this->_channels[name].isLimited() && this->_channels[name].isFull())
 				throw "channel is full\n";
-			if (!this->_channels[name].isLocked() && this->_channels[name].getPassword() != password)
+			if (this->_channels[name].isLocked() && this->_channels[name].getPassword() != password)
 				throw "invalid password\n";
 			this->_channels[name].addClient(it->second);
 			this->_channels[name].sendMessage(it->second.getNick() + " joined the channel: " + name + "\n");
@@ -154,7 +155,7 @@ void Server::kick(int fd, std::stringstream& iss){
 		throw "client not found\n";
 	if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
 		throw "client not in channel\n";
-	if (this->_channels[channel].isOperator(tmp_fd) == true)
+	if (this->_channels[channel].isOperator(tmp_fd) == true && this->_channels[channel].getOwner() != fd)
 		throw "cannot kick operator\n";
 	this->_channels[channel].sendMessage(name + " was kicked from channel: " + channel + "\n");
 	this->_channels[channel].kickClient(this->list.find(tmp_fd)->second.getNick());
@@ -212,7 +213,112 @@ void Server::topic(int fd, std::stringstream& iss){
 	
 }
 
+void Server::mode(int fd, std::stringstream& iss){
+	std::string mode;
+	std::string channel;
+	std::string word;
+	std::map<int, Client>::iterator it = this->list.find(fd);
+	iss >> mode;
+	iss >> channel;
+	iss >> word;
+	if (mode[0] != '+' && mode[0] != '-')
+		throw "Unknown mode type\n";
+	if (channel.empty() || mode.empty())
+		throw "invalid parameteres\n";
+	if (channel[0] != '#')
+		throw "invalid channel name\n";
+	if (this->_channels.find(channel) == this->_channels.end())
+		throw "channel not found\n";
+	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
+		throw "not in channel\n";
+	if (this->_channels[channel].isOperator(fd) == false)
+		throw "not operator\n";
 
+	// std::cout << "mode: " << mode << std::endl;
+	int tmp_fd = this->findClient(word);
+	if (mode[0] == '+') {
+		switch (mode[1])
+		{
+			case 'i':
+				this->_channels[channel].setPrivate(true);
+				break;
+			case 'k':
+				this->_channels[channel].setLocked(true);
+				if (word.empty())
+					throw "invalid parameteres\n";
+				this->_channels[channel].setPassword(word);
+				break;
+			case 'l':
+				if (word.empty())
+					throw "invalid parameteres\n";
+				this->_channels[channel].setSizeLimit(atoi(word.c_str()));
+				this->_channels[channel].setLimited(true);
+				break;
+			case 'o':
+				if (word.empty())
+					throw "invalid parameteres\n";
+				if (this->_channels[channel].isOperator(fd) == false)
+					throw "not operator\n";
+				if (tmp_fd == -1)
+					throw "client not found\n";
+				if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
+					throw "client not in channel\n";
+				if (this->_channels[channel].isOperator(tmp_fd) == true)
+					throw "client is already operator\n";
+				this->_channels[channel].setOperator(tmp_fd);
+				break;
+
+			case 't':
+				this->_channels[channel].setTopic(word);
+				break;
+
+			default:
+				throw "no such mode\n";
+		}
+	}
+	else if (mode[0] == '-') {
+		switch (mode[1])
+		{
+			case 'i':
+				this->_channels[channel].setPrivate(false);
+				break;
+			case 'k':
+				this->_channels[channel].setLocked(false);
+				this->_channels[channel].setPassword("");
+				break;
+			case 'l':
+				if (word.empty())
+					throw "invalid parameteres\n";
+				this->_channels[channel].setSizeLimit(INT_MAX);
+				this->_channels[channel].setLimited(false);
+				break;
+			case 'o':
+				if (word.empty())
+					throw "invalid parameteres\n";
+				if (this->_channels[channel].isOperator(fd) == false)
+					throw "not operator\n";
+				if (tmp_fd == -1)
+					throw "client not found\n";
+
+				if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
+					throw "client not in channel\n";
+
+				if (this->_channels[channel].getOwner() == fd)
+					throw "cannot remove privilege to the owner\n";
+
+				this->_channels[channel].kickOperator(tmp_fd);
+				break;
+
+			case 't':
+				this->_channels[channel].setTopic("");
+				break;
+
+			default:
+				throw "no such mode\n";
+		}
+	}
+	
+}
 
 void Server::parse(int fd, std::string line){
 
@@ -248,6 +354,9 @@ void Server::parse(int fd, std::string line){
 			break;
 		case 6:
 			this->topic(fd, iss);
+			break;
+		case 7:
+			this->mode(fd, iss);
 			break;
 		default:
 			throw "invalid command\n";
