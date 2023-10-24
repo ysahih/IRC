@@ -2,9 +2,13 @@
 
 Channel::Channel(std::string name): _name(name){}
 
-void Channel::setOperator(int fd){this->operator_fd = fd;}
+void Channel::setOperator(int fd){this->_operators.push_back(fd);}
 
 bool Channel::clientExist(Client A){return this->_list.find(A.getFd()) != this->_list.end();}
+
+bool Channel::isOperator(int fd){
+	return std::find(this->_operators.begin(), this->_operators.end(), fd) != this->_operators.end();
+}
 
 void Channel::addClient(Client A){ this->_list[A.getFd()] = A; }
 
