@@ -15,6 +15,7 @@ class Channel {
 		bool _isPrivate; // invite only
 		bool _isLimited; 
 		bool _isLocked; // password protected
+		bool _isTopicRestricted;
 		int _size_limit;
 	public:
 		Channel(){};
@@ -36,7 +37,10 @@ class Channel {
 		void setSizeLimit(int size);
 		void setLimited(bool switcher);
 		void sendMessage(std::string mssg);
+		bool isTopicRestricted();
+		void topicRestriction(bool switcher);
 		std::string getPassword();
+		std::string getTopic();
 		int numberOfClients();
 		int getSizeLimit();
 		int getOwner();

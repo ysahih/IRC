@@ -195,10 +195,10 @@ void Server::topic(int fd, std::stringstream& iss){
 	std::string topic;
 	std::string channel;
 	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> topic;
 	iss >> channel;
+	iss >> topic;
 
-	if (channel.empty() || topic.empty())
+	if (channel.empty())
 		throw "invalid parameteres\n";
 	if (channel[0] != '#')
 		throw "invalid channel name\n";
@@ -206,6 +206,16 @@ void Server::topic(int fd, std::stringstream& iss){
 		throw "channel not found\n";
 	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
 		throw "not in channel\n";
+	if (this->_channels[channel].isOperator(fd) == false)
+		throw "not operator\n";
+	if (this->_channels[channel].isTopicRestricted() == true && this->_channels[channel].getOwner() != fd)
+		throw "topic is restricted\n";
+	if (topic.empty())
+	{
+		this->sendMessage(fd, channel + " :topic is: " + this->_channels[channel].getTopic() + "\n");
+		return;
+	}
+
 	if (this->_channels[channel].isOperator(fd) == false)
 		throw "not operator\n";
 	this->_channels[channel].setTopic(topic);
@@ -269,7 +279,9 @@ void Server::mode(int fd, std::stringstream& iss){
 				break;
 
 			case 't':
-				this->_channels[channel].setTopic(word);
+				if (this->_channels[channel].getOwner() != fd)
+					throw "Not the owner\n";
+				this->_channels[channel].topicRestriction(true);
 				break;
 
 			default:
@@ -299,18 +311,17 @@ void Server::mode(int fd, std::stringstream& iss){
 					throw "not operator\n";
 				if (tmp_fd == -1)
 					throw "client not found\n";
-
 				if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
 					throw "client not in channel\n";
-
 				if (this->_channels[channel].getOwner() == fd)
 					throw "cannot remove privilege to the owner\n";
-
 				this->_channels[channel].kickOperator(tmp_fd);
 				break;
 
 			case 't':
-				this->_channels[channel].setTopic("");
+				if (this->_channels[channel].getOwner() != fd)
+					throw "Not the owner\n";
+				this->_channels[channel].topicRestriction(false);
 				break;
 
 			default:
