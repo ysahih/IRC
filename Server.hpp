@@ -51,6 +51,7 @@ class Server {
 		void setNick(int fd, std::stringstream& iss);
 		void kick(int fd, std::stringstream& iss);
 		void invite(int fd, std::stringstream& iss);
+		void topic(int fd, std::stringstream& iss);
 		void setUser(int fd, std::stringstream& iss);
 		void joinChannel(int fd, std::stringstream& iss);
 		void launch();

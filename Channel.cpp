@@ -31,3 +31,5 @@ void Channel::sendMessage(std::string msg){
         	throw "Failed to send response";
     }
 }
+
+void Channel::setTopic(std::string topic){this->_topic = topic;}

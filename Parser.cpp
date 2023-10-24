@@ -177,6 +177,31 @@ void Server::invite(int fd, std::stringstream& iss){
 	this->_channels[channel].sendMessage(name + " was invited to channel: " + channel + "\n");
 }
 
+void Server::topic(int fd, std::stringstream& iss){
+	
+	std::string topic;
+	std::string channel;
+	std::map<int, Client>::iterator it = this->list.find(fd);
+	iss >> topic;
+	iss >> channel;
+
+	if (channel.empty() || topic.empty())
+		throw "invalid parameteres\n";
+	if (channel[0] != '#')
+		throw "invalid channel name\n";
+	if (this->_channels.find(channel) == this->_channels.end())
+		throw "channel not found\n";
+	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
+		throw "not in channel\n";
+	if (this->_channels[channel].isOperator(fd) == false)
+		throw "not operator\n";
+	this->_channels[channel].setTopic(topic);
+	this->_channels[channel].sendMessage(channel + " :topic changed to: " + topic + "\n");
+	
+}
+
+
+
 void Server::parse(int fd, std::string line){
 
 	std::string str;
@@ -208,6 +233,9 @@ void Server::parse(int fd, std::string line){
 			break;
 		case 5:
 			this->invite(fd, iss);
+			break;
+		case 6:
+			this->topic(fd, iss);
 			break;
 		default:
 			throw "invalid command\n";
