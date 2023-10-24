@@ -56,11 +56,13 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 
 }
 
-void Server::joinChannel(int fd, std::stringstream& iss){
+void Server::joinChannel(int fd, std::stringstream& iss) {
 	
 	std::string name;
+	std::string password;
 	std::map<int, Client>::iterator it = this->list.find(fd);
 	iss >> name;
+	iss >> password;
 
 	if(!it->second.is_authenticate())
 		throw "not authenticate\n";
@@ -74,12 +76,19 @@ void Server::joinChannel(int fd, std::stringstream& iss){
 			Channel newChannel(name);
 			newChannel.addClient(it->second);
 			newChannel.setOperator(fd);
+			newChannel.setPassword(password);
 			this->_channels[name] = newChannel;
 			this->_channels[name].sendMessage(it->second.getNick() + " joined the channel: " + name + " as operator\n");
 		}
 		else {
 			if (this->_channels[name].clientExist(it->second))
 				throw "already in channel\n";
+			if (this->_channels[name].isPrivate())
+				throw "channel is invite only\n";
+			if(this->_channels[name].isLimited() && this->_channels[name].isFull())
+				throw "channel is full\n";
+			if (!this->_channels[name].isLocked() && this->_channels[name].getPassword() != password)
+				throw "invalid password\n";
 			this->_channels[name].addClient(it->second);
 			this->_channels[name].sendMessage(it->second.getNick() + " joined the channel: " + name + "\n");
 		}
@@ -88,7 +97,6 @@ void Server::joinChannel(int fd, std::stringstream& iss){
 			break;
 	}
 }
-
 
 void Server::setUser(int fd, std::stringstream& iss) {
 
@@ -146,6 +154,8 @@ void Server::kick(int fd, std::stringstream& iss){
 		throw "client not found\n";
 	if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
 		throw "client not in channel\n";
+	if (this->_channels[channel].isOperator(tmp_fd) == true)
+		throw "cannot kick operator\n";
 	this->_channels[channel].sendMessage(name + " was kicked from channel: " + channel + "\n");
 	this->_channels[channel].kickClient(this->list.find(tmp_fd)->second.getNick());
 }
@@ -173,6 +183,8 @@ void Server::invite(int fd, std::stringstream& iss){
 		throw "client not found\n";
 	if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == true)
 		throw "client already in channel\n";
+	if(this->_channels[name].isLimited() && this->_channels[name].isFull())
+				throw "channel is full\n";
 	this->_channels[channel].addClient(this->list.find(tmp_fd)->second);
 	this->_channels[channel].sendMessage(name + " was invited to channel: " + channel + "\n");
 }

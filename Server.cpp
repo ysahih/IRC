@@ -57,7 +57,7 @@ bool Server::addClient(struct pollfd _poll)
             return 0;
         throw "Failed to receive data";
     }
-     std::string line;
+    std::string line;
     line.assign(buffer, bytesRead);
     std::stringstream iss(line);
     std::string pass;
