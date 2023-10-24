@@ -44,21 +44,21 @@ class Server {
 		void setSocket();
 		Server();
 		~Server();
-		void sendMessage(int fd, std::string msg);
 		
-		void privateMsg(int fd, std::stringstream& iss);
 		int findClient(std::string name);
+		bool addClient(struct pollfd _poll);
+		void launch();
+		void setPort(short _port);
+		void sendMessage(int fd, std::string msg);
+		void privateMsg(int fd, std::stringstream& iss);
 		void setNick(int fd, std::stringstream& iss);
 		void kick(int fd, std::stringstream& iss);
 		void invite(int fd, std::stringstream& iss);
 		void topic(int fd, std::stringstream& iss);
 		void setUser(int fd, std::stringstream& iss);
 		void joinChannel(int fd, std::stringstream& iss);
-		void launch();
 		void parse(int fd, std::string line);
-		void setPort(short _port);
-		bool addClient(struct pollfd _poll);
-		
+		void mode(int fd, std::stringstream& iss);
 };
 
 #include "Channel.hpp"

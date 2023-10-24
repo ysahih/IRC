@@ -1,7 +1,8 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name): _name(name), _isPrivate(0){
+Channel::Channel(std::string name): _name(name){
 	this->_size_limit = INT_MAX;
+	this->_isPrivate = false;
 	this->_isLimited = false;
 	this->_isLocked = false;
 }
@@ -48,10 +49,28 @@ int Channel::getSizeLimit(){return this->_size_limit;}
 
 int Channel::numberOfClients(){return this->_list.size();}
 
-bool Channel::isFull(){return this->_list.size() == this->_size_limit;}
+bool Channel::isFull(){return this->_list.size() >= this->_size_limit;}
 
 bool Channel::isLimited(){return this->_isLimited ;}
 
 std::string Channel::getPassword(){return this->_password;}
 
 bool Channel::isLocked(){return this->_isLocked;}
+
+void Channel::setPrivate(bool switcher){this->_isPrivate = switcher;}
+
+void Channel::setLocked(bool switcher){this->_isLocked = switcher;}
+
+void Channel::setLimited(bool switcher){this->_isLimited = switcher;}
+
+int Channel::getOwner(){return this->_operators[0];}
+
+void Channel::kickOperator(int fd){
+	std::vector<int>::iterator it;
+	for (it = this->_operators.begin(); it != this->_operators.end(); it++){
+		if (*it == fd){
+			this->_operators.erase(it);
+			return;
+		}
+	}
+}
