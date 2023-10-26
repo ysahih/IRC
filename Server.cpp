@@ -5,6 +5,7 @@
 Server::Server() {
     memset(_fds, 0, sizeof(_fds));
     this->_password = "hello";
+    
 }
 
 Server::~Server() {close(this->_socketfd); }
@@ -59,6 +60,7 @@ bool Server::addClient(struct pollfd _poll)
     }
     std::string line;
     line.assign(buffer, bytesRead);
+    std::cout << "new buffer: " << line << std::endl;
     std::stringstream iss(line);
     std::string pass;
     iss >> pass;
@@ -75,7 +77,7 @@ bool Server::addClient(struct pollfd _poll)
     return 1;
 }
 
-void Server::launch(){
+void Server::launch() {
 
     this->setSocket();
     this->setAddrInfo();
@@ -113,10 +115,13 @@ void Server::launch(){
                     }
                     std::string line;
                     line.assign(buffer, bytesRead);
+                    std::cout << "buffer: " << line << std::endl;
                     // buffer[bytesRead] = 0x0;
                     try{
                         this->parse(this->_fds[i].fd, line);
-                    }catch(const char *s){this->sendMessage(this->_fds[i].fd, s);}
+                    }catch(const char *s){
+                        std::cout << s << std::endl;
+                        this->sendMessage(this->_fds[i].fd, s);}
                 }
         
             }

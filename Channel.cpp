@@ -16,11 +16,9 @@ bool Channel::isOperator(int fd){
 	return std::find(this->_operators.begin(), this->_operators.end(), fd) != this->_operators.end();
 }
 
-
 bool Channel::isTopicRestricted(){return this->_isTopicRestricted;}
 
 void Channel::topicRestriction(bool switcher){this->_isTopicRestricted = switcher;}
-
 
 void Channel::addClient(Client A){ this->_list[A.getFd()] = A;	}
 

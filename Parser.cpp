@@ -51,6 +51,8 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 		msg += "\n";
 		if (msg.empty())
 			throw "invalid parameteres\n";
+		int i = open ("log.txt", O_WRONLY | O_APPEND | O_CREAT, 0666);
+		write(i, msg.c_str(), msg.length());
 		this->sendMessage(tmp_fd, this->list[fd].getNick() + ":" + msg.c_str());
 	}
 
@@ -69,6 +71,11 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 		throw "not authenticate\n";
 	if (name.empty())
 		throw "invalid parameteres\n";
+
+	// std::string name;
+	// std::string pass;
+	// name = channels.
+
 	while (true){
 		if (name[0] != '#')
 			throw "invalid channel name\n";
@@ -94,6 +101,7 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 			this->_channels[name].sendMessage(it->second.getNick() + " joined the channel: " + name + "\n");
 		}
 		iss >> name;
+		iss >> password;
 		if (iss.eof())
 			break;
 	}
@@ -106,8 +114,8 @@ void Server::setUser(int fd, std::stringstream& iss) {
 	std::map<int, Client>::iterator it = this->list.find(fd);
 	iss >> name;
 
-	if (iss >> tmp)
-		throw "invalid parameteres\n";
+	// if (iss >> tmp)
+	// 	throw "invalid parameteres\n";
 	if (name.empty())
 		throw "invalid parameteres\n";
 	it->second.setUser(name);
@@ -254,9 +262,10 @@ void Server::mode(int fd, std::stringstream& iss){
 				break;
 			case 'k':
 				this->_channels[channel].setLocked(true);
-				if (word.empty())
+				if (word.empty() && this->_channels[channel].getPassword().empty())
 					throw "invalid parameteres\n";
-				this->_channels[channel].setPassword(word);
+				if (!word.empty())
+					this->_channels[channel].setPassword(word);
 				break;
 			case 'l':
 				if (word.empty())

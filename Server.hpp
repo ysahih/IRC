@@ -41,8 +41,8 @@ class Server {
 		void setAddrInfo();
 		void bindPort();
 	public:
-		void setSocket();
 		Server();
+		void setSocket();
 		~Server();
 		
 		int findClient(std::string name);
