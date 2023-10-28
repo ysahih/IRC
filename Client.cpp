@@ -12,6 +12,7 @@ void Client::authenticate(){
 void Client::initClient(struct pollfd _poll){
     this->_sockfd = _poll.fd;
     this->fd = _poll;
+    (void)_addr;
 }
 
 void Client::setNick(std::string name){this->_nickname = name;}

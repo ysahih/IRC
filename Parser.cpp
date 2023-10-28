@@ -144,7 +144,8 @@ void Server::kick(int fd, std::stringstream& iss){
 	
 	std::string name;
 	std::string channel;
-	std::map<int, Client>::iterator it = this->list.find(fd);
+	std::map<int, Client>::iterator it;
+	it = this->list.find(fd);
 	iss >> name;
 	iss >> channel;
 
@@ -173,7 +174,8 @@ void Server::invite(int fd, std::stringstream& iss){
 	
 	std::string name;
 	std::string channel;
-	std::map<int, Client>::iterator it = this->list.find(fd);
+	std::map<int, Client>::iterator it;
+	it = this->list.find(fd);
 	iss >> name;
 	iss >> channel;
 
@@ -202,7 +204,8 @@ void Server::topic(int fd, std::stringstream& iss){
 	
 	std::string topic;
 	std::string channel;
-	std::map<int, Client>::iterator it = this->list.find(fd);
+	std::map<int, Client>::iterator it;
+	it = this->list.find(fd);
 	iss >> channel;
 	iss >> topic;
 
@@ -235,7 +238,8 @@ void Server::mode(int fd, std::stringstream& iss){
 	std::string mode;
 	std::string channel;
 	std::string word;
-	std::map<int, Client>::iterator it = this->list.find(fd);
+	std::map<int, Client>::iterator it;
+	it = this->list.find(fd);
 	iss >> mode;
 	iss >> channel;
 	iss >> word;

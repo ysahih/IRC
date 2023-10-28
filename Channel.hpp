@@ -16,7 +16,7 @@ class Channel {
 		bool _isLimited; 
 		bool _isLocked; // password protected
 		bool _isTopicRestricted;
-		int _size_limit;
+		size_t _size_limit;
 	public:
 		Channel(){};
 		Channel(std::string name);
