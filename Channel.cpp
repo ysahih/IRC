@@ -42,6 +42,20 @@ void Channel::sendMessage(std::string msg){
     }
 }
 
+std::string Channel::getUsers(){
+	std::string users = "";
+	std::map<int, Client>::iterator it;
+	for (it = this->_list.begin(); it != this->_list.end(); it++){
+		if (it->first == this->getOwner())
+			users += "@" + it->second.getNick() + " ";
+		else if (this->isOperator(it->first))
+			users += "+" + it->second.getNick() + " ";
+		else
+			users += it->second.getNick() + " ";
+	}
+	return users;
+}
+
 void Channel::setTopic(std::string topic){this->_topic = topic;}
 
 bool Channel::isPrivate(){return this->_isPrivate;}
