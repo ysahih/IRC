@@ -1,12 +1,14 @@
 #include "Client.hpp"
 #include <sys/poll.h>
 
-Client::Client(): _authenticate(0){}
+Client::Client(): _authenticate(0), _welcomed(0){}
 
 void Client::authenticate(){
-    
-    if (!this->_nickname.empty() && !this->_username.empty())
+    if (this->_authenticate)
+        return ;
+    if (!this->_nickname.empty() && !this->_username.empty()){
         this->_authenticate = true;
+    }
 }
 
 void Client::initClient(struct pollfd _poll){
@@ -18,9 +20,10 @@ void Client::initClient(struct pollfd _poll){
 void Client::setNick(std::string name){this->_nickname = name;}
 void Client::setUser(std::string name){this->_username = name;}
 
+void Client::setWelcomed(bool welcomed){this->_welcomed = welcomed;}
 
-bool Client::is_authenticate(){return this->_authenticate;}
-
+bool Client::isAuthenticate(){return this->_authenticate;}
+bool Client::isWelcomed(){return this->_welcomed;}
 std::string Client::getNick(){return this->_nickname;}
 std::string Client::getUser(){return this->_username;}
 int Client::getFd(){return this->_sockfd;}

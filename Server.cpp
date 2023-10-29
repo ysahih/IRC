@@ -32,6 +32,10 @@ void Server::setAddrInfo() {
     this->_addr.sin_family = AF_INET;
     this->_addr.sin_port = htons(this->_port);
 
+    char hostname[_SC_HOST_NAME_MAX];
+    gethostname(hostname, _SC_HOST_NAME_MAX);
+    this->_hostname = hostname;
+    
     struct pollfd _pollfd;
     _pollfd.fd = this->_socketfd;
     _pollfd.events = POLLIN;

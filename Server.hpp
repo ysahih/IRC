@@ -15,7 +15,13 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <poll.h>
+#include <iostream>
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+
 
 
 // #include <string.h>
@@ -28,7 +34,7 @@ class Client;
 
 class Server {
 	private:
-		// std::string _name;
+		std::string _hostname;
 		int _socketfd;
 		short	_port;
 		struct sockaddr_in _addr;

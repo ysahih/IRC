@@ -25,13 +25,16 @@ class Client {
 		std::string _username;
 		std::string _nickname;
 		bool _authenticate;
+		bool _welcomed;
 
 	public:
 		Client();
 		void authenticate();
-		bool is_authenticate();
+		bool isAuthenticate();
+		bool isWelcomed();
 		void initClient(struct pollfd _poll);
 		void setUser(std::string name);
+		void setWelcomed(bool welcomed);
 		void setNick(std::string name);
 		std::string getNick();
 		std::string getUser();
