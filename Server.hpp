@@ -52,7 +52,7 @@ class Server {
 		~Server();
 		
 		int findClient(std::string name);
-		bool addClient(struct pollfd _poll);
+		std::string addClient(struct pollfd _poll);
 		void launch();
 		void setPort(short _port);
 		void sendMessage(int fd, std::string msg);
@@ -67,6 +67,7 @@ class Server {
 		void mode(int fd, std::stringstream& iss);
 };
 
+std::map<std::string, std::string> collectChannels(std::string names, std::string passwords);
 #include "Channel.hpp"
 #include "Client.hpp"
 

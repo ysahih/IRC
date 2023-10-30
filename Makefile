@@ -16,10 +16,11 @@ NAME2 = BOT
 CC = c++
 FLAGS = -Wall -Wextra -Werror -std=c++98
 RM = rm -f
-HEADERS = Channel.hpp Client.hpp Server.hpp
+HEADERS = Channel.hpp Client.hpp Server.hpp 
 
 #Mandatory Files
-FL = main Channel Client Parser Server\
+FL = main Channel Client Parser Server Commands/User Commands/Nick Commands/Invite Commands/Kick \
+	Commands/Join Commands/Privmsg Commands/Topic Commands/Mode \
 
 FO = $(FL:=.o)
 
@@ -39,7 +40,7 @@ $(NAME2) : $(FOB)
 	$(CC) $(FLAGS) $(FOB) -o $(NAME2)
 
 %.o:%.cpp $(HEADERS)
-	$(CC) -c $(FLAGS) $<
+	$(CC) -c $(FLAGS)  $@ $<
 
 clean :
 	$(RM) $(FO) $(FOB)

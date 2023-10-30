@@ -49,7 +49,7 @@ void Server::bindPort() {
 }
 
 
-bool Server::addClient(struct pollfd _poll)
+std::string Server::addClient(struct pollfd _poll)
 {
     Client newClient;
     newClient.initClient(_poll);
@@ -59,7 +59,7 @@ bool Server::addClient(struct pollfd _poll)
     buffer[bytesRead] = 0x0;
     if (bytesRead <= 0){
         if (errno == EWOULDBLOCK || errno == EAGAIN)
-            return 0;
+            return "";
         throw "Failed to receive data";
     }
     std::string line;
@@ -69,16 +69,16 @@ bool Server::addClient(struct pollfd _poll)
     std::string pass;
     iss >> pass;
     if (pass != "PASS")
-        return 0;
+        return "464 :Password incorrect\r\n";
     iss >> pass;
     if (pass != this->_password)
-        return 0;
+        return "464 :Password incorrect";
     this->list[_poll.fd] = newClient;
     const char* response = "Client added without authentication\n";
     int bytesSent = send(_poll.fd, response, strlen(response), 0); //!use of c functions
     if (bytesSent < 0) 
-        throw "Failed to send response";
-    return 1;
+        throw "Failed to send response\r\n";
+    return "";
 }
 
 void Server::launch() {
@@ -105,8 +105,9 @@ void Server::launch() {
                 // otherwise compare the password and add them/;
                 std::map<int, Client>::iterator it = this->list.find(this->_fds[i].fd);
                 if (it == list.end()){
-                    if (this->addClient(this->_fds[i]) == 0)
-                        this->sendMessage(this->_fds[i].fd, "Error(): PASS <password>\n"); // send a message with the cmds form
+                    std::string message = this->addClient(this->_fds[i]);
+                    if (!message.empty())
+                        this->sendMessage(this->_fds[i].fd, message);
                 }
                 else { // here the client is already within the server;
                     char buffer[1024];
