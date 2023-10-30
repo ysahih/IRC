@@ -33,9 +33,11 @@ void Channel::kickClient(std::string name){
 	throw "client not found";
 }
 
-void Channel::sendMessage(std::string msg){
+void Channel::sendMessage(std::string msg, int fd){
 	std::map<int, Client>::iterator it;
 	for (it = this->_list.begin(); it != this->_list.end(); it++){
+		if (it->first == fd)
+			continue;
 		int bytesSent = send(it->first , msg.c_str(), msg.length(), 0);
     	if (bytesSent < 0) 
         	throw "Failed to send response";

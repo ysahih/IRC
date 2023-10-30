@@ -37,7 +37,7 @@ class Channel {
 		void setSizeLimit(int size);
 		std::string getUsers();
 		void setLimited(bool switcher);
-		void sendMessage(std::string mssg);
+		void sendMessage(std::string mssg, int fd);
 		bool isTopicRestricted();
 		void topicRestriction(bool switcher);
 		std::string getPassword();

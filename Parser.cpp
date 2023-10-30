@@ -21,13 +21,18 @@ void Server::sendMessage(int fd, std::string msg){
 void Server::privateMsg(int fd, std::stringstream& iss){
 
 	std::string name;
+	std::string msg;
 	iss >> name;
+	getline(iss, msg);
+	
 	if (this->list.find(fd)->second.isAuthenticate() == false){
 		this->sendMessage(fd, "Error :You are not authenticated\r\n");
 		return ;
 	}
-	if (name.empty())
-		throw "Error :invalid parameteres\r\n";
+	if (name.empty() || msg.empty()){
+		this->sendMessage(fd, "461 " + this->list[fd].getNick() + " PRIVMSG :Not enough parameters\r\n");
+		return ;
+	}
 	if (name[0] == '#'){ //send to channel
 		std::map<std::string, Channel>::iterator it = this->_channels.find(name);
 		if (it == this->_channels.end()){
@@ -38,12 +43,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 			this->sendMessage(fd, "442 " + this->list[fd].getNick() + " " + name + " :You're not on that channel\r\n");
 			return ;
 		}
-		std::string msg;
-		getline(iss, msg);
-		if (msg.empty())
-			throw "Error :invalid parameteres\r\n";
-		msg += "\n";
-		it->second.sendMessage(this->list[fd].getNick() + ":" + msg);
+		it->second.sendMessage(":" + this->list[fd].getNick() + " PRIVMSG " + name + " :" + msg + "\r\n", fd);
 	}
 
 	else { //send to client
@@ -52,14 +52,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 			this->sendMessage(fd, "401 " + this->list[fd].getNick() + " " + name + " :No such nick\r\n");
 			return ;
 		}
-		std::string msg;
-		getline(iss, msg);
-		msg += "\r\n";
-		if (msg.empty())
-			throw "Error :invalid parameteres\r\n";
-		this->sendMessage(fd, this->list[fd].getNick() + ":" + msg.c_str());
-		this->sendMessage(tmp_fd, this->list[fd].getNick() + ":" + msg.c_str());
-
+		this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + " PRIVMSG " + name + " :" + msg + "\r\n");
 	}
 
 }
@@ -112,12 +105,13 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 			newChannel.setOperator(fd);
 			newChannel.setPassword(it2->second);
 			this->_channels[it2->first] = newChannel;
-			this->sendMessage(fd, ":" + this->_hostname + " 331 " + it->second.getNick() + " " + it2->first + " :No topic is set\r\n");
-			this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
-			this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");
+			this->sendMessage(fd, ":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n");
+			// this->_channels[it2->first].sendMessage(":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n", -1);
+			// this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
+			// this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");
 			// std::string welcomeMsg = "Welcome to channel " + it2->first + "!\r\n";
     		// std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + it2->first + " :" + welcomeMsg;
-    		// this->_channels[it2->first].sendMessage(formattedMsg);
+    		// this->_channels[it2->first].sendMessage(formattedMsg, fd);
 
 		}
 		else {
@@ -138,14 +132,14 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 				return ;
 			}
 
-			this->_channels[it2->first].sendMessage(it->second.getNick() + " has joined channel: " + it2->first + "\r\n");
+			this->sendMessage(fd, ":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n");
 			this->_channels[it2->first].addClient(it->second);
-			this->sendMessage(fd, ":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n");
-			this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
-			this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");
+			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n", -1);
+			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n", -1);
+			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n", -1);
 			// std::string welcomeMsg = "Welcome to channel " + it2->first + "!\r\n";
     		// std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + it2->first + " :" + welcomeMsg;
-    		// this->_channels[it2->first].sendMessage(formattedMsg);
+    		// this->_channels[it2->first].sendMessage(formattedMsg, fd);
 
 		}
 	}
@@ -159,7 +153,7 @@ void Server::setUser(int fd, std::stringstream& iss) {
 
 
 	if (name.empty() || name == ":"){
-		this->sendMessage(fd, "ERROR :No nickname given\r\n");
+		this->sendMessage(fd, "ERROR :No name given\r\n");
 		return ;
 	}
 	it->second.setUser(name);
@@ -176,6 +170,7 @@ void Server::setNick(int fd, std::stringstream& iss) {
 	std::string tmp;
 	std::map<int, Client>::iterator it = this->list.find(fd);
 	iss >> name;
+
 
 	if (iss >> tmp){
 		this->sendMessage(fd, "Error :Invalid parameteres\r\n");
@@ -201,8 +196,6 @@ void Server::kick(int fd, std::stringstream& iss){
 	
 	std::string name;
 	std::string channel;
-	std::map<int, Client>::iterator it;
-	it = this->list.find(fd);
 	iss >> channel;
 	iss >> name;
 	
@@ -230,17 +223,18 @@ void Server::kick(int fd, std::stringstream& iss){
 		return ;
 	}
 	if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false){
-		this->sendMessage(fd, "441 " + this->list[fd].getNick() + " " + name + " " + channel + " :They aren't on that channel\r\n");
+		this->sendMessage(fd, "441 " + name + " " + channel + " :They aren't on that channel\r\n");
 		return ;
 	}
 	if (this->_channels[channel].isOperator(tmp_fd) == true && this->_channels[channel].getOwner() != fd){
 		this->sendMessage(fd, "Error :You're not channel operator\r\n");
 		return ;
 	}
-	this->sendMessage(tmp_fd, "KICK " + channel + " " + name + " :You have been kicked by " + this->list[fd].getNick() + "\r\n");
+	
+	this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + " KICK " + channel + " " + this->list[tmp_fd].getNick() + " :" + "Kicked by " + this->list[fd].getNick() + "\r\n");
 	this->_channels[channel].kickOperator(tmp_fd);
 	this->_channels[channel].kickClient(this->list.find(tmp_fd)->second.getNick());
-	this->_channels[channel].sendMessage(name + " was kicked from channel: " + channel + "\r\n");
+	this->sendMessage(fd, ":" + this->list[fd].getNick() + " KICK " + channel + " " + this->list[tmp_fd].getNick() + " :" + "Kicked by " + this->list[fd].getNick() + "\r\n");
 }
 
 void Server::invite(int fd, std::stringstream& iss){
@@ -281,11 +275,16 @@ void Server::invite(int fd, std::stringstream& iss){
 		this->sendMessage(fd, "471 " + this->list[fd].getNick() + " " + channel + " :Cannot join channel (+l)\r\n");
 		return ;
 	}
+
 	this->_channels[channel].addClient(this->list.find(tmp_fd)->second);
-	this->_channels[channel].sendMessage(name + " was invited to channel: " + channel + "\r\n");
-	this->sendMessage(tmp_fd, ":" + this->_hostname + " INVITE " + name + " " + channel + "\r\n"); // inform of the invitation
-	this->sendMessage(fd, ":" + this->_hostname + " 341 " + this->list[fd].getNick() + " " + name + " " + channel + "\r\n"); // inform of the success of the invitation
-	
+	this->_channels[channel].sendMessage(":" + this->list[tmp_fd].getNick() + " JOIN " + channel + "\r\n", -1);
+	this->sendMessage(tmp_fd, ":" + this->_hostname + " 332 " + it->second.getNick() + " " + channel + " :" + this->_channels[channel].getTopic() + "\r\n");
+	this->sendMessage(tmp_fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + channel + " :" + this->_channels[channel].getUsers() + "\r\n");
+	this->sendMessage(tmp_fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + channel + " :End of /NAMES list\r\n");
+	std::string welcomeMsg = "Welcome to channel " + channel + "!\r\n";
+    std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + channel + " :" + welcomeMsg;
+    this->sendMessage(tmp_fd, formattedMsg);
+	// this->sendMessage(fd, ); // inform of the success of the invitation
 }
 
 void Server::topic(int fd, std::stringstream& iss){
@@ -325,7 +324,7 @@ void Server::topic(int fd, std::stringstream& iss){
 		return;
 	}
 	this->_channels[channel].setTopic(topic);
-	this->_channels[channel].sendMessage(this->list[fd].getNick() + " has changed topic to: " + topic + "\r\n");
+	this->_channels[channel].sendMessage(this->list[fd].getNick() + " has changed topic to: " + topic + "\r\n", fd);
 	this->sendMessage(fd, ":" + this->_hostname + " 332 " + this->list[fd].getNick() + " " + channel + " :" + this->_channels[channel].getTopic() + "\r\n"); // inform of the success of setting the topic
 }
 
