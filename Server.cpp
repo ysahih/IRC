@@ -51,9 +51,6 @@ void Server::bindPort() {
 
 std::string Server::addClient(struct pollfd _poll)
 {
-    Client newClient;
-    newClient.initClient(_poll);
-
     char buffer[1024];
     int bytesRead = recv(_poll.fd, buffer, 1024, 0);
     buffer[bytesRead] = 0x0;
@@ -73,7 +70,7 @@ std::string Server::addClient(struct pollfd _poll)
     iss >> pass;
     if (pass != this->_password)
         return "464 :Password incorrect";
-    this->list[_poll.fd] = newClient;
+    this->list[_poll.fd].setRegistered(true);
     const char* response = "Client added without authentication\n";
     int bytesSent = send(_poll.fd, response, strlen(response), 0); //!use of c functions
     if (bytesSent < 0) 
@@ -100,16 +97,13 @@ void Server::launch() {
             throw "";
         for (int i = 1; i < fdnbr; i++){ /*through list of clients*/
             if (this->_fds[i].revents == POLLIN) { // check if there is an event on one of our clients.
-               
-                //if the client has entered the PASS , they would be added to the list
-                // otherwise compare the password and add them/;
-                std::map<int, Client>::iterator it = this->list.find(this->_fds[i].fd);
-                if (it == list.end()){
+    
+                if (this->list[this->_fds[i].fd].isRegistered() == false){
                     std::string message = this->addClient(this->_fds[i]);
                     if (!message.empty())
                         this->sendMessage(this->_fds[i].fd, message);
                 }
-                else { // here the client is already within the server;
+                else {
                     char buffer[1024];
                     int bytesRead = recv(_fds[i].fd, buffer, 1024, 0);
                     
@@ -121,20 +115,21 @@ void Server::launch() {
                     std::string line;
                     line.assign(buffer, bytesRead);
                     std::cout << "buffer: " << line << std::endl;
-                    // buffer[bytesRead] = 0x0;
                     try{
                         this->parse(this->_fds[i].fd, line);
                     }catch(const char *s){
                         std::cout << s << std::endl;
                         this->sendMessage(this->_fds[i].fd, s);}
                 }
-        
             }
         }
         if (this->_fds[0].fd != 0 &&  this->_fds[0].revents == POLLIN) { // if the event is on the socket fd; we add the new_fd to the list.
            
+            struct sockaddr_in addr;
             struct pollfd _clientpoll;
-            _clientpoll.fd  = accept(this->_socketfd, NULL, NULL);
+            socklen_t len = sizeof(addr);
+            Client newClient;
+            _clientpoll.fd  = accept(this->_socketfd, (struct sockaddr *)&addr, &len);
             if (_clientpoll.fd < 0){
                 if (errno != EWOULDBLOCK)
                     throw "Failed to accept connection";
@@ -143,7 +138,9 @@ void Server::launch() {
             // save the file discriptor 
             _clientpoll.events = POLLIN;
             _clientpoll.revents = 0;
-            this->_fds[fdnbr++] = _clientpoll;\
+            newClient.initClient(_clientpoll, addr);
+            this->_fds[fdnbr++] = _clientpoll;
+            this->list[_clientpoll.fd] = newClient;
         }
     }
 }

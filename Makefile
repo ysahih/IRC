@@ -39,9 +39,8 @@ $(NAME) : $(FO) $(HEADERS)
 $(NAME2) : $(FOB)
 	$(CC) $(FLAGS) $(FOB) -o $(NAME2)
 
-%.o:%.cpp $(HEADERS)
-	$(CC) -c $(FLAGS)  $@ $<
-
+%.o : %.cpp  $(HEADERS)
+	$(CC)  $(FLAGS) -o $@ -c $< 
 clean :
 	$(RM) $(FO) $(FOB)
 

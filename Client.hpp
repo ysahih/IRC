@@ -14,29 +14,36 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <arpa/inet.h>
+
 
 
 class Client {
 	private:
 		int _sockfd;
 		struct pollfd fd;
-		//
+		std::string IPAddr;
 		struct sockaddr_in _addr;
 		std::string _username;
 		std::string _nickname;
 		bool _authenticate;
 		bool _welcomed;
+		bool _registered;
 
 	public:
 		Client();
 		void authenticate();
 		bool isAuthenticate();
 		bool isWelcomed();
-		void initClient(struct pollfd _poll);
+		bool isRegistered();
+		void setRegistered(bool registered);
+		void initClient(struct pollfd _poll, struct sockaddr_in _addr);
 		void setUser(std::string name);
 		void setWelcomed(bool welcomed);
 		void setNick(std::string name);
+		struct sockaddr_in getAddr();
 		std::string getNick();
+		std::string getIP();
 		std::string getUser();
 		int getFd();
 

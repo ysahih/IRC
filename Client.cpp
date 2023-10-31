@@ -1,7 +1,9 @@
 #include "Client.hpp"
 #include <sys/poll.h>
 
-Client::Client(): _authenticate(0), _welcomed(0){}
+Client::Client(): _authenticate(0), _welcomed(0), _registered(0) {}
+
+
 
 void Client::authenticate(){
     if (this->_authenticate)
@@ -11,11 +13,20 @@ void Client::authenticate(){
     }
 }
 
-void Client::initClient(struct pollfd _poll){
+void Client::initClient(struct pollfd _poll, struct sockaddr_in _addr){
     this->_sockfd = _poll.fd;
     this->fd = _poll;
-    (void)_addr;
+    this->_addr = _addr;
+    char *str = inet_ntoa(_addr.sin_addr);
+    this->IPAddr = str;
 }
+
+struct sockaddr_in Client::getAddr(){return this->_addr;}
+
+bool Client::isRegistered(){return this->_registered;}
+std::string Client::getIP(){return this->IPAddr;} 
+
+void Client::setRegistered(bool registered){this->_registered = registered;}
 
 void Client::setNick(std::string name){this->_nickname = name;}
 void Client::setUser(std::string name){this->_username = name;}

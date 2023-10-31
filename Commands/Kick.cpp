@@ -39,8 +39,7 @@ void Server::kick(int fd, std::stringstream& iss){
 		return ;
 	}
 	
-	this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + " KICK " + channel + " " + this->list[tmp_fd].getNick() + " :" + "Kicked by " + this->list[fd].getNick() + "\r\n");
+	this->_channels[channel].sendMessage(":" + this->list[fd].getNick() + " KICK " + channel + " " + this->list[tmp_fd].getNick() + " :" + "Kicked by " + this->list[fd].getNick() + "\r\n", -1);
 	this->_channels[channel].kickOperator(tmp_fd);
 	this->_channels[channel].kickClient(this->list.find(tmp_fd)->second.getNick());
-	this->sendMessage(fd, ":" + this->list[fd].getNick() + " KICK " + channel + " " + this->list[tmp_fd].getNick() + " :" + "Kicked by " + this->list[fd].getNick() + "\r\n");
 }
