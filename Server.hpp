@@ -67,6 +67,10 @@ class Server {
 		void parse(int fd, std::string line);
 		void mode(int fd, std::stringstream& iss);
 		std::string getHostName();
+		void bot(int fd, std::stringstream &iss);
+		void getDate(int fd);
+		void getHelp(int fd);
+		void getJoke(int fd);
 };
 
 std::map<std::string, std::string> collectChannels(std::string names, std::string passwords);
