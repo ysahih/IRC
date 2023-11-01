@@ -25,6 +25,16 @@ void Server::setSocket() {
         throw "Failed to set socket to non-blocking mode";
 }
 
+std::string Server::getHostName()
+{
+    std::system("hostname > ip.txt");
+    std::ifstream ip("ip.txt");
+    std::string hostname;
+    std::getline(ip, hostname);
+    std::remove("ip.txt");
+    return (hostname);
+}
+
 void Server::setAddrInfo() {
 
 
@@ -32,9 +42,10 @@ void Server::setAddrInfo() {
     this->_addr.sin_family = AF_INET;
     this->_addr.sin_port = htons(this->_port);
 
-    char hostname[_SC_HOST_NAME_MAX];
-    gethostname(hostname, _SC_HOST_NAME_MAX);
-    this->_hostname = hostname;
+    // char hostname[_SC_HOST_NAME_MAX];
+    // gethostname(hostname, _SC_HOST_NAME_MAX);
+    // this->_hostname = hostname;
+    this->_hostname = this->getHostName();
     
     struct pollfd _pollfd;
     _pollfd.fd = this->_socketfd;

@@ -66,6 +66,7 @@ class Server {
 		void joinChannel(int fd, std::stringstream& iss);
 		void parse(int fd, std::string line);
 		void mode(int fd, std::stringstream& iss);
+		std::string getHostName();
 };
 
 std::map<std::string, std::string> collectChannels(std::string names, std::string passwords);
