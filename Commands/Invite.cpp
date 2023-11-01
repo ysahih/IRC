@@ -45,9 +45,9 @@ void Server::invite(int fd, std::stringstream& iss){
 	this->sendMessage(tmp_fd, ":" + this->_hostname + " 332 " + it->second.getNick() + " " + channel + " :" + this->_channels[channel].getTopic() + "\r\n");
 	this->sendMessage(tmp_fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + channel + " :" + this->_channels[channel].getUsers() + "\r\n");
 	this->sendMessage(tmp_fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + channel + " :End of /NAMES list\r\n");
-	std::string welcomeMsg = "Welcome to channel " + channel + "!\r\n";
-    std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + channel + " :" + welcomeMsg;
-    this->sendMessage(tmp_fd, formattedMsg);
+	// std::string welcomeMsg = "Welcome to channel " + channel + "!\r\n";
+    // std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + channel + " :" + welcomeMsg;
+    // this->sendMessage(tmp_fd, formattedMsg);
 	// this->sendMessage(fd, ); // inform of the success of the invitation
 }
 

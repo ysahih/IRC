@@ -40,7 +40,7 @@ void Server::parse(int fd, std::string line){
 
 	std::string str;
 	std::stringstream iss(line);
-	std::string cmd[10] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", "PONG"};
+	std::string cmd[10] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", "PONG", "QUIT"};
 	iss >> str;
 	int index = -1;
     for (int i = 0; i < 10; ++i) {
@@ -75,6 +75,9 @@ void Server::parse(int fd, std::string line){
 			this->mode(fd, iss);
 			break;
 		case 8:
+			break;
+		case 9: 
+			close(fd); //!
 			break;
 		default:
 			this->sendMessage (fd, "421 " + str + " :Unknown command\r\n");

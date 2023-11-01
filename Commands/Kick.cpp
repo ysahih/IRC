@@ -38,7 +38,11 @@ void Server::kick(int fd, std::stringstream& iss){
 		this->sendMessage(fd, "Error :You're not channel operator\r\n");
 		return ;
 	}
-	
+	if (tmp_fd == fd){
+		this->sendMessage(fd, "Error :You can't kick yourself\r\n");
+		return ;
+	}
+
 	this->_channels[channel].sendMessage(":" + this->list[fd].getNick() + " KICK " + channel + " " + this->list[tmp_fd].getNick() + " :" + "Kicked by " + this->list[fd].getNick() + "\r\n", -1);
 	this->_channels[channel].kickOperator(tmp_fd);
 	this->_channels[channel].kickClient(this->list.find(tmp_fd)->second.getNick());
