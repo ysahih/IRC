@@ -48,41 +48,4 @@ class Channel {
 
 };
 
-/*#include <iostream>
-#include <string>
-#include <vector>
-
-int main() {
-    std::string channels = "a,b,c";
-    std::vector<std::string> channelList;
-
-    std::string::size_type start = 0;
-    std::string::size_type end = 0;
-
-    while ((end = channels.find(',', start)) != std::string::npos) {
-        std::string name = channels.substr(start, end - start);
-        start = end + 1;
-    }
-    std::string name = channels.substr(start);
-
-    // Extract the last channel (after the last comma)
-    channelList.push_back(lastChannel);
-
-    // Print the individual channels
-    for (const auto& channel : channelList) {
-        std::cout << channel << std::endl;
-    }
-
-    return 0;
-}*/
-
-
-/*MODE - Change the channel’s mode:
-	· i: Set/remove Invite-only channel // !done
-	//!· t: Set/remove the restrictions of the TOPIC command to channel	operators: WTF is this?
-	· k: Set/remove the channel key (password)   // !done
-	· o: Give/take channel operator privilege   // !done 
-											   //  ! no other operator can kick the owner or take his operator privilege
-	 l: Set/remove the user limit to channe*/ //    !done
-
 #endif

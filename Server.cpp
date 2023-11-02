@@ -2,10 +2,15 @@
 #include <sys/poll.h>
 
 
-Server::Server() {
+
+Server::Server(std::string port, std::string password) {
     memset(_fds, 0, sizeof(_fds));
-    this->_password = "hello";
-    
+    this->_port = atoi(port.c_str());
+    if (this->_port <= 0)
+        throw "Invalid port";
+    this->_password = password;
+    if (this->_password.empty())
+        throw "Invalid password";
 }
 
 void Server::sendToAll(std::string msg){
@@ -23,9 +28,6 @@ Server::~Server() {
     close(this->_socketfd);
 }
 
-void Server::setPort(short _port){
-    this->_port = _port;
-}
 
 void Server::setSocket() {
     int tmp = 1;
@@ -49,17 +51,10 @@ std::string Server::getHostName()
 }
 
 void Server::setAddrInfo() {
-
-
     memset(&this->_addr, 0, sizeof(this->_addr));
     this->_addr.sin_family = AF_INET;
     this->_addr.sin_port = htons(this->_port);
-
-    // char hostname[_SC_HOST_NAME_MAX];
-    // gethostname(hostname, _SC_HOST_NAME_MAX);
-    // this->_hostname = hostname;
     this->_hostname = this->getHostName();
-    
     struct pollfd _pollfd;
     _pollfd.fd = this->_socketfd;
     _pollfd.events = POLLIN;
@@ -78,11 +73,8 @@ std::string Server::addClient(struct pollfd _poll)
     char buffer[1024];
     int bytesRead = recv(_poll.fd, buffer, 1024, 0);
     buffer[bytesRead] = 0x0;
-    if (bytesRead <= 0){
-        if (errno == EWOULDBLOCK || errno == EAGAIN)
-            return "";
+    if (bytesRead <= 0)
         throw "Failed to receive data";
-    }
     std::string line;
     line.assign(buffer, bytesRead);
     std::cout << "new buffer: " << line << std::endl;
@@ -93,12 +85,8 @@ std::string Server::addClient(struct pollfd _poll)
         return "464 :Password incorrect\r\n";
     iss >> pass;
     if (pass != this->_password)
-        return "464 :Password incorrect";
+        return "464 :Password incorrect\r\n";
     this->list[_poll.fd].setRegistered(true);
-    const char* response = "Client added without authentication\n";
-    int bytesSent = send(_poll.fd, response, strlen(response), 0); //!use of c functions
-    if (bytesSent < 0) 
-        throw "Failed to send response\r\n";
     return "";
 }
 
@@ -114,9 +102,9 @@ void Server::launch() {
   
     int fdnbr = 1;
     while (true) {
-        if (poll(this->_fds, 10, -1) < 0){
-            throw "poll";
-        }
+        if (poll(this->_fds, 10, -1) < 0)
+            throw "poll failed";
+
         for (int i = 1; i < fdnbr; i++){ /*through list of clients*/
             if (this->_fds[i].revents == POLLIN) { // check if there is an event on one of our clients.
     
@@ -136,15 +124,15 @@ void Server::launch() {
                     }
                     std::string line;
                     line.assign(buffer, bytesRead);
-                    // std::stringstream iss(line);
-                    // while (std::getline(iss, line, '\n')){
-                    //     std::cout << "buffer: " << line << std::endl;
+                    std::stringstream iss(line);
+                    while (std::getline(iss, line, '\n')){
+                        std::cout << "buffer: " << line << std::endl;
                         try{
                             this->parse(this->_fds[i].fd, line);
                         }catch(const char *s){
                             std::cout << s << std::endl;
                             this->sendMessage(this->_fds[i].fd, s);}
-                    // }
+                    }
                 }
             }
         }

@@ -13,8 +13,8 @@ int Server::findClient(std::string name){
 void Server::sendMessage(int fd, std::string msg){
 
     int bytesSent = send(fd, msg.c_str(), msg.length(), 0);
-    if (bytesSent < 0) 
-        throw "Failed to send response"; //! this error should kill the server
+    if (bytesSent < 0)
+        throw "Failed to send response";
 }
 
 std::map<std::string, std::string> collectChannels(std::string names, std::string passwords) {
@@ -92,14 +92,13 @@ void Server::parse(int fd, std::string line){
 		case 8:
 			break;
 		case 9: 
-			this->quit(fd); //!
+			this->quit(fd);
 			break;
 		case 10:
 			this->bot(fd, iss);
 			break;
 		default:
 			this->sendMessage (fd, "421 " + str + " :Unknown command\r\n");
-			// throw "Error :invalid cmd\r\n";
 	}
 }
 
