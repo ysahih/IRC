@@ -15,7 +15,13 @@ void Server::sendToAll(std::string msg){
     }
 }
 
-Server::~Server() {close(this->_socketfd); }
+Server::~Server() {
+    std::map<int, Client>::iterator it = this->list.begin();
+    for (; it != this->list.end(); it++){
+        close(it->first);
+    }
+    close(this->_socketfd);
+}
 
 void Server::setPort(short _port){
     this->_port = _port;
@@ -130,15 +136,15 @@ void Server::launch() {
                     }
                     std::string line;
                     line.assign(buffer, bytesRead);
-                    std::stringstream iss(line);
-                    while (std::getline(iss, line, '\n')){
-                        std::cout << "buffer: " << line << std::endl;
+                    // std::stringstream iss(line);
+                    // while (std::getline(iss, line, '\n')){
+                    //     std::cout << "buffer: " << line << std::endl;
                         try{
                             this->parse(this->_fds[i].fd, line);
                         }catch(const char *s){
                             std::cout << s << std::endl;
                             this->sendMessage(this->_fds[i].fd, s);}
-                    }
+                    // }
                 }
             }
         }

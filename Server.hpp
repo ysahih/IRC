@@ -65,6 +65,7 @@ class Server {
 		void topic(int fd, std::stringstream& iss);
 		void setUser(int fd, std::stringstream& iss);
 		void joinChannel(int fd, std::stringstream& iss);
+		void quit(int fd);
 		void parse(int fd, std::string line);
 		void mode(int fd, std::stringstream& iss);
 		std::string getHostName();

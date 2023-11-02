@@ -36,6 +36,20 @@ std::map<std::string, std::string> collectChannels(std::string names, std::strin
 	return channels;
 }
 
+void Server::quit(int fd){
+	std::map<int, Client>::iterator it = this->list.find(fd);
+	std::map<std::string, Channel>::iterator it2 = this->_channels.begin();
+	for (; it2 != this->_channels.end(); it2++){
+		if (it2->second.clientExist(it->second))
+			it2->second.kickClient(it->second.getNick());
+		else if (it2->second.isOperator(fd))
+			it2->second.kickOperator(it->first);
+		it2->second.sendMessage(":" + this->list[fd].getNick() + " KICK " + it2->first + " " + this->list[fd].getNick() + " :" + "Was kicked by !\r\n", -1);
+	}
+	this->list.erase(it);
+	close(fd);
+}
+
 void Server::parse(int fd, std::string line){
 
 	std::string str;
@@ -78,7 +92,7 @@ void Server::parse(int fd, std::string line){
 		case 8:
 			break;
 		case 9: 
-			close(fd); //!
+			this->quit(fd); //!
 			break;
 		case 10:
 			this->bot(fd, iss);

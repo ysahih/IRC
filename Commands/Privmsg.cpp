@@ -58,7 +58,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 			// :yahya!ss@(hostname) PRIVMSG saad :slm
 			//message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";
 			this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n");
-			std::cout << ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n";
+			// std::cout << ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n";
 			// this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + " PRIVMSG " + this->list[tmp_fd].getNick() + " "  + msg + "\n");
 		}
 	}
