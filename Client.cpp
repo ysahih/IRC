@@ -14,13 +14,12 @@ void Client::authenticate(){
 }
 
 void Client::initClient(struct pollfd _poll, struct sockaddr_in _addr){
-    char str[INET_ADDRSTRLEN];
+    char *str;
     this->_sockfd = _poll.fd;
     this->fd = _poll;
     this->_addr = _addr;
-    inet_ntop(AF_INET, (sockaddr *)&_addr.sin_addr, str, INET_ADDRSTRLEN);
+    str = inet_ntoa(_addr.sin_addr);
     this->IPAddr = str;
-    std::cout << str << " *---------* " + this->IPAddr << std::endl;
 }
 
 struct sockaddr_in Client::getAddr(){return this->_addr;}
