@@ -72,21 +72,36 @@ std::string Server::addClient(struct pollfd _poll)
 {
     char buffer[1024];
     int bytesRead = recv(_poll.fd, buffer, 1024, 0);
-    buffer[bytesRead] = 0x0;
     if (bytesRead <= 0)
         throw "Failed to receive data";
+    
     std::string line;
     line.assign(buffer, bytesRead);
-    std::cout << "new buffer: " << line << std::endl;
     std::stringstream iss(line);
-    std::string pass;
-    iss >> pass;
-    if (pass != "PASS")
-        return "464 :Password incorrect\r\n";
-    iss >> pass;
-    if (pass != this->_password)
-        return "464 :Password incorrect\r\n";
-    this->list[_poll.fd].setRegistered(true);
+    while (std::getline(iss, line, '\n')){
+        std::cout << "new buffer: " << line << std::endl;
+        if (this->list[_poll.fd].isRegistered() == false){
+            std::stringstream iss(line);
+            std::string pass;
+            iss >> pass;
+            if (pass != "PASS")
+                return "464 :Password incorrect\r\n";
+            iss >> pass;
+            if (!pass.empty() && pass[0] == ':')
+                pass = pass.substr(1);
+            if (pass != this->_password)
+                return "464 :Password incorrect\r\n";
+            this->list[_poll.fd].setRegistered(true);
+        }
+        else{
+            try{
+                this->parse(_poll.fd, line);
+            } catch (const char *s){
+                std::cout << s << std::endl;
+                this->sendMessage(_poll.fd, s);
+            }
+        }
+    }
     return "";
 }
 

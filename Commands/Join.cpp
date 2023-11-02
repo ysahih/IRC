@@ -30,7 +30,8 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 			newChannel.setOperator(fd);
 			newChannel.setPassword(it2->second);
 			this->_channels[it2->first] = newChannel;
-			this->sendMessage(fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + " JOIN " + it2->first + "\r\n");
+			//  ":" + nick + "!~" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"
+			this->sendMessage(fd, ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + " JOIN :" + it2->first + "\r\n");
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n", -1);
 			this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
 			this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");
@@ -46,7 +47,7 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 				return ;
 			}
 			if(this->_channels[it2->first].isLimited() && this->_channels[it2->first].isFull()){
-				this->sendMessage(fd, "471 " + it->second.getNick() + " " + it2->first + " :Cannot join channel (+l)\r\n");
+				this->sendMessage(fd, ":" + it->second.getNick() + " 471 JOIN " + it2->first + " :Cannot join channel (+l)\r\n");
 				return ;
 			}
 			if (this->_channels[it2->first].isLocked() && this->_channels[it2->first].getPassword() != it2->second){
@@ -55,9 +56,9 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 			}
 
 			this->_channels[it2->first].addClient(it->second);
-			this->sendMessage(fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + " JOIN " + it2->first + "\r\n");
+			this->sendMessage(fd, ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + " JOIN :" + it2->first + "\r\n");
 			this->_channels[it2->first].sendMessage(":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n", fd);
-			this->sendMessage(fd, ":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n");
+			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n", -1);
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n", -1);
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n", -1);
 
