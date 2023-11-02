@@ -130,12 +130,15 @@ void Server::launch() {
                     }
                     std::string line;
                     line.assign(buffer, bytesRead);
-                    std::cout << "buffer: " << line << std::endl;
-                    try{
-                        this->parse(this->_fds[i].fd, line);
-                    }catch(const char *s){
-                        std::cout << s << std::endl;
-                        this->sendMessage(this->_fds[i].fd, s);}
+                    std::stringstream iss(line);
+                    while (std::getline(iss, line, '\n')){
+                        std::cout << "buffer: " << line << std::endl;
+                        try{
+                            this->parse(this->_fds[i].fd, line);
+                        }catch(const char *s){
+                            std::cout << s << std::endl;
+                            this->sendMessage(this->_fds[i].fd, s);}
+                    }
                 }
             }
         }

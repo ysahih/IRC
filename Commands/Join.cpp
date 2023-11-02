@@ -34,9 +34,6 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n", -1);
 			this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
 			this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");
-			// std::string welcomeMsg = "Welcome to channel " + it2->first + "!\r\n";
-    		// std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + it2->first + " :" + welcomeMsg;
-    		// this->_channels[it2->first].sendMessage(formattedMsg, fd);
 
 		}
 		else {
@@ -59,18 +56,10 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 
 			this->_channels[it2->first].addClient(it->second);
 			this->sendMessage(fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + " JOIN " + it2->first + "\r\n");
-			// this->sendMessage(fd, ":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n");
-			// this->_channels[it2->first].sendMessage(":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n", fd);
+			this->_channels[it2->first].sendMessage(":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n", fd);
 			this->sendMessage(fd, ":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n");
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n", -1);
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n", -1);
-
-			// this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
-			// this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");
-
-			// std::string welcomeMsg = "Welcome to channel " + it2->first + "!\r\n";
-    		// std::string formattedMsg = ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@host PRIVMSG " + it2->first + " :" + welcomeMsg;
-    		// this->sendMessage(fd, formattedMsg);
 
 		}
 	}
