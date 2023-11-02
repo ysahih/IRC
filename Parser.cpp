@@ -49,6 +49,7 @@ void Server::parse(int fd, std::string line){
             break;
         }
     }
+	
 	switch(index) {
 		case 0:
 			this->setNick(fd, iss);

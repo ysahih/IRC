@@ -56,6 +56,7 @@ class Server {
 		std::string addClient(struct pollfd _poll);
 		void launch();
 		void setPort(short _port);
+		void sendToAll(std::string msg);
 		void sendMessage(int fd, std::string msg);
 		void privateMsg(int fd, std::stringstream& iss);
 		void setNick(int fd, std::stringstream& iss);

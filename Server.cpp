@@ -8,6 +8,13 @@ Server::Server() {
     
 }
 
+void Server::sendToAll(std::string msg){
+    for (std::map<int, Client>::iterator it = this->list.begin(); it != this->list.end(); it++){
+        if (it->second.isRegistered() == true)
+            this->sendMessage(it->first, msg);
+    }
+}
+
 Server::~Server() {close(this->_socketfd); }
 
 void Server::setPort(short _port){
@@ -100,12 +107,10 @@ void Server::launch() {
 
   
     int fdnbr = 1;
-    
-    std::string a; 
-    a.find_first_not_of(' ');
     while (true) {
-        if (poll(this->_fds, 1024, -1) < 0)
-            throw "";
+        if (poll(this->_fds, 10, -1) < 0){
+            throw "poll";
+        }
         for (int i = 1; i < fdnbr; i++){ /*through list of clients*/
             if (this->_fds[i].revents == POLLIN) { // check if there is an event on one of our clients.
     
@@ -141,11 +146,8 @@ void Server::launch() {
             socklen_t len = sizeof(addr);
             Client newClient;
             _clientpoll.fd  = accept(this->_socketfd, (struct sockaddr *)&addr, &len);
-            if (_clientpoll.fd < 0){
-                if (errno != EWOULDBLOCK)
-                    throw "Failed to accept connection";
-                break;
-            }
+            if (_clientpoll.fd < 0)
+                throw "Failed to accept connection";
             // save the file discriptor 
             _clientpoll.events = POLLIN;
             _clientpoll.revents = 0;
