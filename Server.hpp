@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <fstream>
 #include <cstring>
 #include <cstdlib>
 #include <unistd.h>
@@ -15,7 +16,13 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <poll.h>
+#include <iostream>
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+
 
 
 // #include <string.h>
@@ -28,7 +35,7 @@ class Client;
 
 class Server {
 	private:
-		// std::string _name;
+		std::string _hostname;
 		int _socketfd;
 		short	_port;
 		struct sockaddr_in _addr;
@@ -41,14 +48,14 @@ class Server {
 		void setAddrInfo();
 		void bindPort();
 	public:
+		Server(std::string port, std::string password);
 		void setSocket();
-		Server();
 		~Server();
 		
 		int findClient(std::string name);
-		bool addClient(struct pollfd _poll);
+		std::string addClient(struct pollfd _poll);
 		void launch();
-		void setPort(short _port);
+		void sendToAll(std::string msg);
 		void sendMessage(int fd, std::string msg);
 		void privateMsg(int fd, std::stringstream& iss);
 		void setNick(int fd, std::stringstream& iss);
@@ -57,10 +64,17 @@ class Server {
 		void topic(int fd, std::stringstream& iss);
 		void setUser(int fd, std::stringstream& iss);
 		void joinChannel(int fd, std::stringstream& iss);
+		void quit(int fd);
 		void parse(int fd, std::string line);
 		void mode(int fd, std::stringstream& iss);
+		std::string getHostName();
+		void bot(int fd, std::stringstream &iss);
+		void getDate(int fd);
+		void getHelp(int fd);
+		void getJoke(int fd);
 };
 
+std::map<std::string, std::string> collectChannels(std::string names, std::string passwords);
 #include "Channel.hpp"
 #include "Client.hpp"
 

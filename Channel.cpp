@@ -5,6 +5,7 @@ Channel::Channel(std::string name): _name(name){
 	this->_isPrivate = false;
 	this->_isLimited = false;
 	this->_isLocked = false;
+	this->_isTopicRestricted = false;
 }
 
 void Channel::setOperator(int fd){this->_operators.push_back(fd);}
@@ -14,6 +15,10 @@ bool Channel::clientExist(Client A){return this->_list.find(A.getFd()) != this->
 bool Channel::isOperator(int fd){
 	return std::find(this->_operators.begin(), this->_operators.end(), fd) != this->_operators.end();
 }
+
+bool Channel::isTopicRestricted(){return this->_isTopicRestricted;}
+
+void Channel::topicRestriction(bool switcher){this->_isTopicRestricted = switcher;}
 
 void Channel::addClient(Client A){ this->_list[A.getFd()] = A;	}
 
@@ -28,13 +33,29 @@ void Channel::kickClient(std::string name){
 	throw "client not found";
 }
 
-void Channel::sendMessage(std::string msg){
+void Channel::sendMessage(std::string msg, int fd){
 	std::map<int, Client>::iterator it;
 	for (it = this->_list.begin(); it != this->_list.end(); it++){
+		if (it->first == fd)
+			continue;
 		int bytesSent = send(it->first , msg.c_str(), msg.length(), 0);
     	if (bytesSent < 0) 
         	throw "Failed to send response";
     }
+}
+
+std::string Channel::getUsers(){
+	std::string users = "";
+	std::map<int, Client>::iterator it;
+	for (it = this->_list.begin(); it != this->_list.end(); it++){
+		if (it->first == this->getOwner())
+			users += "@" + it->second.getNick() + " ";
+		else if (this->isOperator(it->first))
+			users += "+" + it->second.getNick() + " ";
+		else
+			users += it->second.getNick() + " ";
+	}
+	return users;
 }
 
 void Channel::setTopic(std::string topic){this->_topic = topic;}
@@ -49,9 +70,12 @@ int Channel::getSizeLimit(){return this->_size_limit;}
 
 int Channel::numberOfClients(){return this->_list.size();}
 
+
 bool Channel::isFull(){return this->_list.size() >= this->_size_limit;}
 
 bool Channel::isLimited(){return this->_isLimited ;}
+
+std::string Channel::getTopic(){return this->_topic;}
 
 std::string Channel::getPassword(){return this->_password;}
 
