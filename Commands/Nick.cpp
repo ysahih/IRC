@@ -29,7 +29,7 @@ void Server::setNick(int fd, std::stringstream& iss) {
 	std::string oldName = it->second.getNick();
 	it->second.setNick(name);
 	it->second.authenticate();
-	// if (it->second.isWelcomed() == false && it->second.isAuthenticate() == true){
+	if (it->second.isWelcomed() == false && it->second.isAuthenticate() == true){
 		// :IRC-SERVER 001 user :Welcome to the Internet Relay Network user!~sa@127.0.0.1
 		// this->sendMessage(fd, ":" + this->_hostname + " 001 " + this->list[fd].getNick() + " :Welcome to the IRC Network, " + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + "\r\n");
 		// this->sendMessage(fd, ":" + this->_hostname + " 001 " + this->list[fd].getNick() + " :Welcome " + this->list[fd].getNick() + " to the IRC Network !\r\n");
@@ -37,18 +37,18 @@ void Server::setNick(int fd, std::stringstream& iss) {
 		// this->sendMessage(fd, ":" + this->_hostname + " 003 " + this->list[fd].getNick() + " :This server was created 2023-10-15 !\r\n");
 		// this->sendMessage(fd, ":" + this->_hostname + " 004 " + this->list[fd].getNick() + " :Host: " + this->_hostname + ", Version: 1.0, User mode: none, Channel mode: o, i, l, k, t !\r\n");
 		// if (it->second.isWelcomed() == false && it->second.isAuthenticate() == true){
-    std::string msg = ":" + this->_hostname + " 001 " +  this->list[fd].getNick() +  " :Welcome to the Internet Relay Network " + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + "127.0.0.1\r\n";
-    msg += ":" + _hostname + " 002 " +  this->list[fd].getNick() + " :Your host is " + _hostname + ", running version leet-irc 1.0.0\r\n";
-    msg += ":" + _hostname + " 003 " +  this->list[fd].getNick() + " :This server has been started Wed Oct 12 2022\r\n";
-    msg += ":" + _hostname + " 004 " +  this->list[fd].getNick() + " " + _hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-    msg += ":" + _hostname + " 251 " + this->list[fd].getNick() + " :There are " +  std::to_string(list.size()) + " users and 1 bot on 1 servers\r\n";
-    msg += ":" + _hostname + " 375 " + this->list[fd].getNick() + " :- " + _hostname + " Message of the day -\r\n";
-    msg += ":" + _hostname + " 376 " + this->list[fd].getNick() + " :End of MOTD command\r\n";
-	this->sendMessage(fd, msg);
+    	std::string msg = ":" + this->_hostname + " 001 " +  this->list[fd].getNick() +  " :Welcome to the Internet Relay Network " + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + "127.0.0.1\r\n";
+    	msg += ":" + _hostname + " 002 " +  this->list[fd].getNick() + " :Your host is " + _hostname + ", running version leet-irc 1.0.0\r\n";
+    	msg += ":" + _hostname + " 003 " +  this->list[fd].getNick() + " :This server has been started Wed Oct 12 2022\r\n";
+    	msg += ":" + _hostname + " 004 " +  this->list[fd].getNick() + " " + _hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+    	msg += ":" + _hostname + " 251 " + this->list[fd].getNick() + " :There are " +  std::to_string(list.size()) + " users and 1 bot on 1 servers\r\n";
+    	msg += ":" + _hostname + " 375 " + this->list[fd].getNick() + " :- " + _hostname + " Message of the day -\r\n";
+    	msg += ":" + _hostname + " 376 " + this->list[fd].getNick() + " :End of MOTD command\r\n";
+		this->sendMessage(fd, msg);
 			// this->sendMessage(fd, ":" + this->_hostname + " 001 " + this->list[fd].getNick() + " :Welcome to the IRC Network, " + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@localhost\r\n");
 		it->second.setWelcomed(true);
 		return ;
-	// }
+	}
 
 	this->sendToAll(":" + oldName + "!~" + it->second.getUser() + "@localhost" + " NICK :" + name + "\r\n");
 
