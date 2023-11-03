@@ -15,7 +15,8 @@ class Channel {
 		bool _isPrivate; // invite only
 		bool _isLimited; 
 		bool _isLocked; // password protected
-		int _size_limit;
+		bool _isTopicRestricted;
+		size_t _size_limit;
 	public:
 		Channel(){};
 		Channel(std::string name);
@@ -34,21 +35,17 @@ class Channel {
 		void setLocked(bool switcher);
 		void setTopic(std::string topic);
 		void setSizeLimit(int size);
+		std::string getUsers();
 		void setLimited(bool switcher);
-		void sendMessage(std::string mssg);
+		void sendMessage(std::string mssg, int fd);
+		bool isTopicRestricted();
+		void topicRestriction(bool switcher);
 		std::string getPassword();
+		std::string getTopic();
 		int numberOfClients();
 		int getSizeLimit();
 		int getOwner();
 
 };
-
-/*MODE - Change the channel’s mode:
-	· i: Set/remove Invite-only channel // !done
-	//!· t: Set/remove the restrictions of the TOPIC command to channel	operators: WTF is this?
-	· k: Set/remove the channel key (password)   // !done
-	· o: Give/take channel operator privilege   // !done 
-											   //  ! no other operator can kick the owner or take his operator privilege
-	 l: Set/remove the user limit to channe*/ //    !done
 
 #endif

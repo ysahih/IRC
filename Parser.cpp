@@ -2,7 +2,6 @@
 
 
 int Server::findClient(std::string name){
-    // std::cout << '-' + name + '-' << std::endl;
     std::map<int, Client>::iterator it = this->list.begin();
     for (; it != this->list.end(); it++){
         if (it->second.getNick() == name)
@@ -14,325 +13,84 @@ int Server::findClient(std::string name){
 void Server::sendMessage(int fd, std::string msg){
 
     int bytesSent = send(fd, msg.c_str(), msg.length(), 0);
-    if (bytesSent < 0) 
-        throw "Failed to send response"; //! this error should kill the server
+    if (bytesSent < 0)
+        throw "Failed to send response";
 }
 
-
-void Server::privateMsg(int fd, std::stringstream& iss){
-
+std::map<std::string, std::string> collectChannels(std::string names, std::string passwords) {
+	std::map<std::string, std::string> channels;
 	std::string name;
-	iss >> name;
-	if (this->list.find(fd)->second.is_authenticate() == false)
-		throw "not authenticate\n";
-	if (name.empty())
-		throw "invalid parameteres\n";
-	if (name[0] == '#'){ //send to channel
-		std::map<std::string, Channel>::iterator it = this->_channels.find(name);
-		if (it == this->_channels.end())
-			throw "channel not found\n";
-		if (it->second.clientExist(this->list.find(fd)->second) == false)
-			throw "not in channel\n";
-		
-		//msg sent here and to users must be parsed
-		std::string msg;
-		getline(iss, msg);
-		if (msg.empty())
-			throw "invalid parameteres\n";
-		msg += "\n";
-		it->second.sendMessage(this->list[fd].getNick() + ":" + msg);
-	}
-	else { //send to client
-		int tmp_fd = this->findClient(name);
-		if (tmp_fd == -1)
-			throw "client not found\n";
-		std::string msg;
-		getline(iss, msg);
-		msg += "\n";
-		if (msg.empty())
-			throw "invalid parameteres\n";
-		this->sendMessage(tmp_fd, this->list[fd].getNick() + ":" + msg.c_str());
-	}
+	std::string pass;
+	std::stringstream iss(names);
+	std::stringstream pss(passwords);
 
+	while (std::getline(iss, name, ',')) {
+
+		std::getline(pss, pass, ',');
+		channels[name] = pass;
+		if (iss.eof() && !pss.eof())
+			throw "Error :invalid parameters\r\n";
+		if (pss.eof())
+			pass = "";
+	}
+	return channels;
 }
 
-void Server::joinChannel(int fd, std::stringstream& iss) {
-	
-	std::string name;
-	std::string password;
+void Server::part(int fd, std::stringstream& iss){
+	std::string names;
+	std::string msg;
 	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> name;
-	iss >> password;
-
-
-	if(!it->second.is_authenticate())
-		throw "not authenticate\n";
-	if (name.empty())
-		throw "invalid parameteres\n";
-	while (true){
-		if (name[0] != '#')
-			throw "invalid channel name\n";
-		if (this->_channels.find(name) == this->_channels.end()){
-
-			Channel newChannel(name);
-			newChannel.addClient(it->second);
-			newChannel.setOperator(fd);
-			newChannel.setPassword(password);
-			this->_channels[name] = newChannel;
-			this->_channels[name].sendMessage(it->second.getNick() + " joined the channel: " + name + " as operator\n");
+	iss >> names;
+	iss >> msg;
+	if (names.empty())
+		throw "Error :invalid parameters\r\n";
+	std::map<std::string, std::string> channels = collectChannels(names, msg);
+	std::map<std::string, std::string>::iterator it2 = channels.begin();
+	for (; it2 != channels.end(); it2++) {
+		if (it2->first[0] != '#')
+			throw "Error :invalid channel name\r\n";
+		if (this->_channels.find(it2->first) == this->_channels.end()){
+			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
+			return ;
 		}
-		else {
-			if (this->_channels[name].clientExist(it->second))
-				throw "already in channel\n";
-			if (this->_channels[name].isPrivate())
-				throw "channel is invite only\n";
-			if(this->_channels[name].isLimited() && this->_channels[name].isFull())
-				throw "channel is full\n";
-			if (this->_channels[name].isLocked() && this->_channels[name].getPassword() != password)
-				throw "invalid password\n";
-			this->_channels[name].addClient(it->second);
-			this->_channels[name].sendMessage(it->second.getNick() + " joined the channel: " + name + "\n");
+		if (!this->_channels[it2->first].clientExist(it->second)){
+			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
+			return ;
 		}
-		iss >> name;
-		if (iss.eof())
-			break;
+		this->_channels[it2->first].kickOperator(fd);
+		this->_channels[it2->first].kickClient(it->second.getNick());
+
 	}
 }
 
-void Server::setUser(int fd, std::stringstream& iss) {
-
-	std::string name;
-	std::string tmp;
+void Server::quit(int fd){
 	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> name;
-
-	if (iss >> tmp)
-		throw "invalid parameteres\n";
-	if (name.empty())
-		throw "invalid parameteres\n";
-	it->second.setUser(name);
-	it->second.authenticate();
-	this->sendMessage(fd, "user set\n");
-}
-
-void Server::setNick(int fd, std::stringstream& iss) {
-	
-	std::string name;
-	std::string tmp;
-	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> name;
-
-	if (iss >> tmp)
-		throw "invalid parameteres\n";
-	if (name.empty())
-		throw "invalid parameteres\n";
-	if (this->findClient(name) != -1)
-		throw "nick already exist\n";
-	it->second.setNick(name);
-	it->second.authenticate();
-}
-
-void Server::kick(int fd, std::stringstream& iss){
-	
-	std::string name;
-	std::string channel;
-	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> name;
-	iss >> channel;
-
-	if (channel.empty() || name.empty())
-		throw "invalid parameteres\n";
-	if (channel[0] != '#')
-		throw "invalid channel name\n";
-	if (this->_channels.find(channel) == this->_channels.end())
-		throw "channel not found\n";
-	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
-		throw "not in channel\n";
-	if (this->_channels[channel].isOperator(fd) == false)
-		throw "not operator\n";
-	int tmp_fd = this->findClient(name);
-	if (tmp_fd == -1)
-		throw "client not found\n";
-	if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
-		throw "client not in channel\n";
-	if (this->_channels[channel].isOperator(tmp_fd) == true && this->_channels[channel].getOwner() != fd)
-		throw "cannot kick operator\n";
-	this->_channels[channel].sendMessage(name + " was kicked from channel: " + channel + "\n");
-	this->_channels[channel].kickClient(this->list.find(tmp_fd)->second.getNick());
-}
-
-void Server::invite(int fd, std::stringstream& iss){
-	
-	std::string name;
-	std::string channel;
-	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> name;
-	iss >> channel;
-
-	if (channel.empty() || name.empty())
-		throw "invalid parameteres\n";
-	if (channel[0] != '#')
-		throw "invalid channel name\n";
-	if (this->_channels.find(channel) == this->_channels.end())
-		throw "channel not found\n";
-	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
-		throw "not in channel\n";
-	if (this->_channels[channel].isOperator(fd) == false)
-		throw "not operator\n";
-	int tmp_fd = this->findClient(name);
-	if (tmp_fd == -1)
-		throw "client not found\n";
-	if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == true)
-		throw "client already in channel\n";
-	if(this->_channels[name].isLimited() && this->_channels[name].isFull())
-				throw "channel is full\n";
-	this->_channels[channel].addClient(this->list.find(tmp_fd)->second);
-	this->_channels[channel].sendMessage(name + " was invited to channel: " + channel + "\n");
-}
-
-void Server::topic(int fd, std::stringstream& iss){
-	
-	std::string topic;
-	std::string channel;
-	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> topic;
-	iss >> channel;
-
-	if (channel.empty() || topic.empty())
-		throw "invalid parameteres\n";
-	if (channel[0] != '#')
-		throw "invalid channel name\n";
-	if (this->_channels.find(channel) == this->_channels.end())
-		throw "channel not found\n";
-	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
-		throw "not in channel\n";
-	if (this->_channels[channel].isOperator(fd) == false)
-		throw "not operator\n";
-	this->_channels[channel].setTopic(topic);
-	this->_channels[channel].sendMessage(channel + " :topic changed to: " + topic + "\n");
-	
-}
-
-void Server::mode(int fd, std::stringstream& iss){
-	std::string mode;
-	std::string channel;
-	std::string word;
-	std::map<int, Client>::iterator it = this->list.find(fd);
-	iss >> mode;
-	iss >> channel;
-	iss >> word;
-	if (mode[0] != '+' && mode[0] != '-')
-		throw "Unknown mode type\n";
-	if (channel.empty() || mode.empty())
-		throw "invalid parameteres\n";
-	if (channel[0] != '#')
-		throw "invalid channel name\n";
-	if (this->_channels.find(channel) == this->_channels.end())
-		throw "channel not found\n";
-	if (this->_channels[channel].clientExist(this->list.find(fd)->second) == false)
-		throw "not in channel\n";
-	if (this->_channels[channel].isOperator(fd) == false)
-		throw "not operator\n";
-
-	// std::cout << "mode: " << mode << std::endl;
-	int tmp_fd = this->findClient(word);
-	if (mode[0] == '+') {
-		switch (mode[1])
-		{
-			case 'i':
-				this->_channels[channel].setPrivate(true);
-				break;
-			case 'k':
-				this->_channels[channel].setLocked(true);
-				if (word.empty())
-					throw "invalid parameteres\n";
-				this->_channels[channel].setPassword(word);
-				break;
-			case 'l':
-				if (word.empty())
-					throw "invalid parameteres\n";
-				this->_channels[channel].setSizeLimit(atoi(word.c_str()));
-				this->_channels[channel].setLimited(true);
-				break;
-			case 'o':
-				if (word.empty())
-					throw "invalid parameteres\n";
-				if (this->_channels[channel].isOperator(fd) == false)
-					throw "not operator\n";
-				if (tmp_fd == -1)
-					throw "client not found\n";
-				if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
-					throw "client not in channel\n";
-				if (this->_channels[channel].isOperator(tmp_fd) == true)
-					throw "client is already operator\n";
-				this->_channels[channel].setOperator(tmp_fd);
-				break;
-
-			case 't':
-				this->_channels[channel].setTopic(word);
-				break;
-
-			default:
-				throw "no such mode\n";
-		}
+	std::map<std::string, Channel>::iterator it2 = this->_channels.begin();
+	for (; it2 != this->_channels.end(); it2++){
+		if (it2->second.clientExist(it->second))
+			it2->second.kickClient(it->second.getNick());
+		else if (it2->second.isOperator(fd))
+			it2->second.kickOperator(it->first);
+		it2->second.sendMessage(":" + this->list[fd].getNick() + " KICK " + it2->first + " " + this->list[fd].getNick() + " :" + "Was kicked by !\r\n", -1);
 	}
-	else if (mode[0] == '-') {
-		switch (mode[1])
-		{
-			case 'i':
-				this->_channels[channel].setPrivate(false);
-				break;
-			case 'k':
-				this->_channels[channel].setLocked(false);
-				this->_channels[channel].setPassword("");
-				break;
-			case 'l':
-				if (word.empty())
-					throw "invalid parameteres\n";
-				this->_channels[channel].setSizeLimit(INT_MAX);
-				this->_channels[channel].setLimited(false);
-				break;
-			case 'o':
-				if (word.empty())
-					throw "invalid parameteres\n";
-				if (this->_channels[channel].isOperator(fd) == false)
-					throw "not operator\n";
-				if (tmp_fd == -1)
-					throw "client not found\n";
-
-				if (this->_channels[channel].clientExist(this->list.find(tmp_fd)->second) == false)
-					throw "client not in channel\n";
-
-				if (this->_channels[channel].getOwner() == fd)
-					throw "cannot remove privilege to the owner\n";
-
-				this->_channels[channel].kickOperator(tmp_fd);
-				break;
-
-			case 't':
-				this->_channels[channel].setTopic("");
-				break;
-
-			default:
-				throw "no such mode\n";
-		}
-	}
-	
+	this->list.erase(it);
+	close(fd);
 }
 
 void Server::parse(int fd, std::string line){
 
 	std::string str;
 	std::stringstream iss(line);
-	std::string cmd[10] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE"};
+	std::string cmd[12] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", "PONG", "QUIT", "PART", "BOT"};
 	iss >> str;
 	int index = -1;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 11; ++i) {
         if (cmd[i] == str) {
             index = i;
             break;
         }
     }
+	
 	switch(index) {
 		case 0:
 			this->setNick(fd, iss);
@@ -358,7 +116,20 @@ void Server::parse(int fd, std::string line){
 		case 7:
 			this->mode(fd, iss);
 			break;
+		case 8:
+			break;
+		case 9: 
+			this->quit(fd);
+			break;
+		case 10:
+			this->part(fd, iss);
+			break;
+		case 11:
+			this->bot(fd, iss);
+			break;
 		default:
-			throw "invalid command\n";
+			this->sendMessage (fd, "421 " + str + " :Unknown command\r\n");
 	}
 }
+
+
