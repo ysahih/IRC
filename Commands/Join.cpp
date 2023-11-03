@@ -23,15 +23,15 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 	for(; it2 != channels.end(); it2++) {
 		if (it2->first[0] != '#')
 			throw "Error :invalid channel name\r\n";
-		if (this->_channels.find(it2->first) == this->_channels.end()){
+		if (this->_channels.find(it2->first) == this->_channels.end()) {
 
 			Channel newChannel(it2->first);
 			newChannel.addClient(it->second);
 			newChannel.setOperator(fd);
 			newChannel.setPassword(it2->second);
 			this->_channels[it2->first] = newChannel;
-			//  ":" + nick + "!~" + username + "@" + ipaddress + " JOIN " + channelname + "\r\n"
 			this->sendMessage(fd, ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + this->list[fd].getIP() + " JOIN :" + it2->first + "\r\n");
+			this->sendMessage(fd, ":" + this->list[fd].getNick() + " JOIN " + it2->first + "\r\n");
 			this->_channels[it2->first].sendMessage(":" + this->_hostname + " 332 " + it->second.getNick() + " " + it2->first + " :" + this->_channels[it2->first].getTopic() + "\r\n", -1);
 			this->sendMessage(fd, ":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n");
 			this->sendMessage(fd, ":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n");

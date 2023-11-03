@@ -26,6 +26,7 @@ class Client {
 		struct sockaddr_in _addr;
 		std::string _username;
 		std::string _nickname;
+		std::string _buffer;
 		bool _authenticate;
 		bool _welcomed;
 		bool _registered;
@@ -36,6 +37,9 @@ class Client {
 		bool isAuthenticate();
 		bool isWelcomed();
 		bool isRegistered();
+		void clearBuffer();
+		bool isBuffered();
+		std::string joinBuffer(std::string msg);
 		void setRegistered(bool registered);
 		void initClient(struct pollfd _poll, struct sockaddr_in _addr);
 		void setUser(std::string name);

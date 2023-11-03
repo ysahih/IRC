@@ -27,6 +27,18 @@ struct sockaddr_in Client::getAddr(){return this->_addr;}
 bool Client::isRegistered(){return this->_registered;}
 std::string Client::getIP(){return this->IPAddr;} 
 
+std::string Client::joinBuffer(std::string msg){
+    this->_buffer += msg;
+    return this->_buffer;    
+}
+bool Client::isBuffered(){
+    return this->_buffer.empty() == false;
+}
+
+void Client::clearBuffer(){
+    this->_buffer.clear();
+}
+
 void Client::setRegistered(bool registered){this->_registered = registered;}
 
 void Client::setNick(std::string name){this->_nickname = name;}

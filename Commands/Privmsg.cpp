@@ -55,10 +55,11 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 				this->sendMessage(fd, ":" + this->list[fd].getNick() + " 401 PRIVMSG :No such nick\r\n");
 				return ;
 			}
-			// :yahya!ss@(hostname) PRIVMSG saad :slm
-			// message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";
+			if (tmp_fd == fd){
+				this->sendMessage(fd, ":" + this->list[fd].getNick() + " 400 PRIVMSG :Cannot send to yourself\r\n");
+				return ;
+			}
 			// this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n");
-			// std::cout << ":" + this->list[fd].getNick() + "!~" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n";
 			std::string mssg = ":" + this->list[fd].getNick() + " PRIVMSG " + name + " "  + msg + "\r\n";
 			std::cout << mssg;
 			this->sendMessage(tmp_fd, mssg);
