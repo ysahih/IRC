@@ -54,7 +54,7 @@ void Server::parse(int fd, std::string line){
 
 	std::string str;
 	std::stringstream iss(line);
-	std::string cmd[11] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", "PONG", "QUIT", "BOT"};
+	std::string cmd[12] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", "PONG", "QUIT", "PART", "BOT"};
 	iss >> str;
 	int index = -1;
     for (int i = 0; i < 11; ++i) {
@@ -95,6 +95,9 @@ void Server::parse(int fd, std::string line){
 			this->quit(fd);
 			break;
 		case 10:
+			// this->quit(fd);
+			break;
+		case 11:
 			this->bot(fd, iss);
 			break;
 		default:
