@@ -30,6 +30,8 @@
 // #include <sys/types.h>
 // #include <sys/socket.h>
 
+#define SIZE 512
+
 class Channel;
 class Client;
 
@@ -39,9 +41,8 @@ class Server {
 		int _socketfd;
 		short	_port;
 		struct sockaddr_in _addr;
-		struct pollfd _fds[1024];
+		struct pollfd _fds[SIZE];
 		std::string _password;
-		// std::vector<Client> list;
 		std::map<int, Client> list;
 		std::map<std::string, Channel> _channels;
 
@@ -65,13 +66,13 @@ class Server {
 		void setUser(int fd, std::stringstream& iss);
 		void joinChannel(int fd, std::stringstream& iss);
 		void quit(int fd);
+		void part(int fd, std::stringstream& iss);
 		void parse(int fd, std::string line);
 		void mode(int fd, std::stringstream& iss);
 		std::string getHostName();
 		void bot(int fd, std::stringstream &iss);
 		void getDate(int fd);
 		void getHelp(int fd);
-		void getJoke(int fd);
 };
 
 std::map<std::string, std::string> collectChannels(std::string names, std::string passwords);

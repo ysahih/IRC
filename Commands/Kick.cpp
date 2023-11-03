@@ -35,7 +35,7 @@ void Server::kick(int fd, std::stringstream& iss){
 		return ;
 	}
 	if (this->_channels[channel].isOperator(tmp_fd) == true && this->_channels[channel].getOwner() != fd){
-		this->sendMessage(fd, "Error :You're not channel operator\r\n");
+		this->sendMessage(fd, "Error :Can't kick channel owner\r\n");
 		return ;
 	}
 	if (tmp_fd == fd){

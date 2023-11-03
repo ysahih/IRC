@@ -77,6 +77,8 @@ std::string Server::addClient(struct pollfd _poll)
     
     std::string line;
     line.assign(buffer, bytesRead);
+    if (line.length() == 0)
+        return "";
     if (line[line.length() - 1] != '\n'){
         this->list[_poll.fd].joinBuffer(line);
         std::cout << "buffer: " << line << std::endl;
@@ -127,7 +129,7 @@ void Server::launch() {
   
     int fdnbr = 1;
     while (true) {
-        if (poll(this->_fds, 10, -1) < 0)
+        if (poll(this->_fds, SIZE, -1) < 0)
             throw "poll failed";
 
         for (int i = 1; i < fdnbr; i++){ /*through list of clients*/
@@ -149,6 +151,8 @@ void Server::launch() {
                     }
                     std::string line;
                     line.assign(buffer, bytesRead);
+                    if (line.empty())
+                        continue;
                     if (line[line.length() - 1] != '\n'){
                         this->list[this->_fds[i].fd].joinBuffer(line);
                         continue;

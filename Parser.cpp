@@ -36,6 +36,33 @@ std::map<std::string, std::string> collectChannels(std::string names, std::strin
 	return channels;
 }
 
+void Server::part(int fd, std::stringstream& iss){
+	std::string names;
+	std::string msg;
+	std::map<int, Client>::iterator it = this->list.find(fd);
+	iss >> names;
+	iss >> msg;
+	if (names.empty())
+		throw "Error :invalid parameters\r\n";
+	std::map<std::string, std::string> channels = collectChannels(names, msg);
+	std::map<std::string, std::string>::iterator it2 = channels.begin();
+	for (; it2 != channels.end(); it2++) {
+		if (it2->first[0] != '#')
+			throw "Error :invalid channel name\r\n";
+		if (this->_channels.find(it2->first) == this->_channels.end()){
+			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
+			return ;
+		}
+		if (!this->_channels[it2->first].clientExist(it->second)){
+			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
+			return ;
+		}
+		this->_channels[it2->first].kickOperator(fd);
+		this->_channels[it2->first].kickClient(it->second.getNick());
+
+	}
+}
+
 void Server::quit(int fd){
 	std::map<int, Client>::iterator it = this->list.find(fd);
 	std::map<std::string, Channel>::iterator it2 = this->_channels.begin();
@@ -95,7 +122,7 @@ void Server::parse(int fd, std::string line){
 			this->quit(fd);
 			break;
 		case 10:
-			// this->quit(fd);
+			this->part(fd, iss);
 			break;
 		case 11:
 			this->bot(fd, iss);
