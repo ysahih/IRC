@@ -10,19 +10,24 @@ void Server::joinChannel(int fd, std::stringstream& iss) {
 	iss >> passwords;
 
 
-	if(it->second.isAuthenticate() == false)
-		throw "Error :You are not authenticated\r\n";
+	if(it->second.isAuthenticate() == false){
+		this->sendMessage(fd, "451 JOIN :You have not authenticate\r\n");
+		return ;
+	}
 
-
-	if (names.empty())
-		throw "Error :invalid parameters\r\n";
+	if (names.empty()){
+		this->sendMessage(fd, "Error :invalid parameters\r\n");
+		return ;
+	}
 	std::map<std::string, std::string> channels = collectChannels(names, passwords);
 	std::map<std::string, std::string>::iterator it2 = channels.begin();
 
 
 	for(; it2 != channels.end(); it2++) {
-		if (it2->first[0] != '#')
-			throw "Error :invalid channel name\r\n";
+		if (it2->first[0] != '#'){
+			this->sendMessage(fd, "Error :invalid channel name\r\n");
+			return ;
+		}
 		if (this->_channels.find(it2->first) == this->_channels.end()) {
 
 			Channel newChannel(it2->first);

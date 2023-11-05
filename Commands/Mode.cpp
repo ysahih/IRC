@@ -9,12 +9,18 @@ void Server::mode(int fd, std::stringstream& iss){
 	iss >> channel;
 	iss >> mode;
 	iss >> word;
-	if ((mode[0] != '+' && mode[0] != '-') || mode.length() != 2)
-		throw "Error :Unknown mode type\r\n";
-	if (channel.empty() || mode.empty())
-		throw "Error :invalid parameteres\r\n";
-	if (channel[0] != '#')
-		throw "Error :invalid channel name\n";
+	if ((mode[0] != '+' && mode[0] != '-') || mode.length() != 2){
+		this->sendMessage(fd, "Error :invalid mode\r\n");
+		return ;
+	}
+	if (channel.empty() || mode.empty()){
+		this->sendMessage(fd, "Error :invalid parameters\r\n");
+		return ;
+	}
+	if (channel[0] != '#'){
+		this->sendMessage(fd, "Error :invalid channel name\r\n");
+		return ;
+	}
 	if (this->_channels.find(channel) == this->_channels.end()){
 		this->sendMessage(fd, "403 " + this->list[fd].getNick() + " " + channel + " :No such channel\r\n");
 		return ;
@@ -32,29 +38,37 @@ void Server::mode(int fd, std::stringstream& iss){
 		switch (mode[1])
 		{
 			case 'i':
-				if (!word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (!word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				this->_channels[channel].setPrivate(true);
 				this->_channels[channel].sendMessage("MODE " + channel + " +i\r\n", -1);
 				break;
 			case 'k':
-				if (word.empty() && this->_channels[channel].getPassword().empty())
-					throw "Error :No password was given\r\n";
+				if (word.empty() && this->_channels[channel].getPassword().empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				if (!word.empty())
 					this->_channels[channel].setPassword(word);
 				this->_channels[channel].setLocked(true);
 				this->_channels[channel].sendMessage("MODE " + channel + " +k " + word + "\r\n", -1);
 				break;
 			case 'l':
-				if (word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				this->_channels[channel].setSizeLimit(atoi(word.c_str()));
 				this->_channels[channel].setLimited(true);
 				this->_channels[channel].sendMessage("MODE " + channel + " +l " + word + "\r\n", -1);
 				break;
 			case 'o':
-				if (word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				if (tmp_fd == -1){
 					this->sendMessage(fd, "401 " + this->list[fd].getNick() + " " + word + " :No such nick\r\n");
 					return ;
@@ -72,8 +86,10 @@ void Server::mode(int fd, std::stringstream& iss){
 				break;
 
 			case 't':
-				if (!word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (!word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				if (this->_channels[channel].getOwner() != fd){
 					this->sendMessage(fd, "Error :You're not channel operator\r\n");
 					return ;
@@ -83,35 +99,43 @@ void Server::mode(int fd, std::stringstream& iss){
 				break;
 
 			default:
-				throw "Error :Unknown mode\n";
+				this->sendMessage(fd, "Error :Unknown mode\r\n");
 		}
 	}
 	else if (mode[0] == '-') {
 		switch (mode[1])
 		{
 			case 'i':
-				if (!word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (!word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				this->_channels[channel].setPrivate(false);
 				this->_channels[channel].sendMessage("MODE " + channel + " -i\r\n", -1);
 				break;
 			case 'k':
-				if (!word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (!word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				this->_channels[channel].setLocked(false);
 				this->_channels[channel].setPassword("");
 				this->_channels[channel].sendMessage("MODE " + channel + " -k\r\n", -1);
 				break;
 			case 'l':
-				if (!word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (!word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				this->_channels[channel].setSizeLimit(INT_MAX);
 				this->_channels[channel].setLimited(false);
 				this->_channels[channel].sendMessage("MODE " + channel + " -l\r\n", -1);
 				break;
 			case 'o':
-				if(word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if(word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				if (tmp_fd == -1){
 					this->sendMessage(fd, "401 " + this->list[fd].getNick() + " " + word + " :No such nick\r\n");
 					return ;
@@ -137,8 +161,10 @@ void Server::mode(int fd, std::stringstream& iss){
 				break;
 
 			case 't':
-				if (!word.empty())
-					throw "Error :invalid parameteres\r\n";
+				if (!word.empty()){
+					this->sendMessage(fd, "Error :invalid parameteres\r\n");
+					return ;
+				}
 				if (this->_channels[channel].getOwner() != fd){
 					this->sendMessage(fd, "Error :You're not channel operator\r\n");
 					return ;
@@ -148,7 +174,7 @@ void Server::mode(int fd, std::stringstream& iss){
 				break;
 
 			default:
-				throw "Error :Unknown mode\n";
+				this->sendMessage(fd, "Error :Unknown mode\r\n");
 		}
 	}
 	

@@ -30,7 +30,6 @@ void Channel::kickClient(std::string name){
 			return;
 		}
 	}
-	throw "client not found";
 }
 
 void Channel::sendMessage(std::string msg, int fd){
@@ -40,7 +39,7 @@ void Channel::sendMessage(std::string msg, int fd){
 			continue;
 		int bytesSent = send(it->first , msg.c_str(), msg.length(), 0);
     	if (bytesSent < 0) 
-        	throw "Failed to send response";
+        	throw std::runtime_error("Failed to send response");
     }
 }
 

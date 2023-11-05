@@ -6,10 +6,9 @@ std::vector<std::string> nameSplit(std::string name){
 	std::string tmp;
 	std::stringstream ss(name);
 	while (getline(ss, tmp, ',')){
-		names.push_back(tmp);
+		names.push_back(toLower(tmp));
 	}
-	for(size_t i = 0; i < names.size(); i++)
-		std::cout << names[i] << std::endl;
+
 	return names;
 }
 
@@ -61,9 +60,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 			}
 			// this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n");
 			std::string mssg = ":" + this->list[fd].getNick() + " PRIVMSG " + name + " "  + msg + "\r\n";
-			std::cout << mssg;
 			this->sendMessage(tmp_fd, mssg);
-			// std::cout << ":" + this->list[fd].getNick() + " PRIVMSG " + this->list[tmp_fd].getNick() + " :"  + msg + "\n";
 		}
 	}
 

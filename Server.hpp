@@ -54,7 +54,7 @@ class Server {
 		~Server();
 		
 		int findClient(std::string name);
-		std::string addClient(struct pollfd _poll);
+		std::string addClient(struct pollfd _poll, std::string line);
 		void launch();
 		void sendToAll(std::string msg);
 		void sendMessage(int fd, std::string msg);
@@ -76,6 +76,7 @@ class Server {
 };
 
 std::map<std::string, std::string> collectChannels(std::string names, std::string passwords);
+std::string toLower(std::string str);
 #include "Channel.hpp"
 #include "Client.hpp"
 

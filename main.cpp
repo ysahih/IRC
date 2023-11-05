@@ -10,6 +10,7 @@ int main(int ac, char **av)
     try {
         Server server(av[1], av[2]);
         server.launch();
-    }catch (const char* s)  {std::cout << s << std::endl; }
+    }catch (const std::runtime_error& e)  {std::cout << e.what() << std::endl;}
+    return 0;
 
 }

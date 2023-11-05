@@ -29,7 +29,7 @@ std::string Client::getIP(){return this->IPAddr;}
 
 std::string Client::joinBuffer(std::string msg){
     this->_buffer += msg;
-    return this->_buffer;    
+    return this->_buffer;
 }
 bool Client::isBuffered(){
     return this->_buffer.empty() == false;

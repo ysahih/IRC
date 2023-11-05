@@ -10,10 +10,14 @@ void Server::topic(int fd, std::stringstream& iss){
 	iss >> channel;
 	iss >> topic;
 
-	if (channel.empty())
-		throw "Error :Invalid parameteres\r\n";
-	if (channel[0] != '#')
-		throw "Error :invalid channel name\r\n";;
+	if (channel.empty()){
+		this->sendMessage(fd, "Error :invalid parameters\r\n");
+		return ;
+	}
+	if (channel[0] != '#'){
+		this->sendMessage(fd, "Error :invalid channel name\r\n");
+		return ;
+	}
 	if (this->_channels.find(channel) == this->_channels.end()){
 		this->sendMessage(fd, "403 " + this->list[fd].getNick() + " " + channel + " :No such channel\r\n");
 		return ;

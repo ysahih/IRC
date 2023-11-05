@@ -9,7 +9,8 @@ void Server::setNick(int fd, std::stringstream& iss) {
 	std::map<int, Client>::iterator it = this->list.find(fd);
 	iss >> name;
 
-	if (iss >> tmp){
+	name = toLower(name);
+	if (iss >> tmp) {
 		this->sendMessage(fd, "461 " + name + " NICK :Invalid parameteres\r\n");
 		return ;
 	}
@@ -36,9 +37,5 @@ void Server::setNick(int fd, std::stringstream& iss) {
 		it->second.setWelcomed(true);
 		return ;
 	}
-
 	this->sendToAll(":" + oldName + "!~" + it->second.getUser() + "@localhost" + " NICK :" + name + "\r\n");
-
-	
-
 }

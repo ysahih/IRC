@@ -14,7 +14,14 @@ void Server::sendMessage(int fd, std::string msg){
 
     int bytesSent = send(fd, msg.c_str(), msg.length(), 0);
     if (bytesSent < 0)
-        throw "Failed to send response";
+        throw std::runtime_error("Failed to send response");
+}
+std::string toLower(std::string str){
+	std::string tmp = "";
+	for (size_t i = 0; i < str.size(); i++){
+		tmp += std::tolower(str[i]);
+	}
+	return tmp;
 }
 
 std::map<std::string, std::string> collectChannels(std::string names, std::string passwords) {
@@ -27,9 +34,9 @@ std::map<std::string, std::string> collectChannels(std::string names, std::strin
 	while (std::getline(iss, name, ',')) {
 
 		std::getline(pss, pass, ',');
-		channels[name] = pass;
+		channels[toLower(name)] = pass;
 		if (iss.eof() && !pss.eof())
-			throw "Error :invalid parameters\r\n";
+			return std::map<std::string, std::string>();
 		if (pss.eof())
 			pass = "";
 	}
@@ -42,13 +49,21 @@ void Server::part(int fd, std::stringstream& iss){
 	std::map<int, Client>::iterator it = this->list.find(fd);
 	iss >> names;
 	iss >> msg;
-	if (names.empty())
-		throw "Error :invalid parameters\r\n";
+	if (names.empty()){
+		this->sendMessage(fd, "Error :invalid parameters\r\n");
+		return ;
+	}
 	std::map<std::string, std::string> channels = collectChannels(names, msg);
 	std::map<std::string, std::string>::iterator it2 = channels.begin();
+	if (it2 == channels.end()){
+		this->sendMessage(fd, "Error :invalid parameters\r\n");
+		return ;
+	}
 	for (; it2 != channels.end(); it2++) {
-		if (it2->first[0] != '#')
-			throw "Error :invalid channel name\r\n";
+		if (it2->first[0] != '#'){
+			this->sendMessage(fd, "Error :invalid channel name\r\n");
+			return ;
+		}
 		if (this->_channels.find(it2->first) == this->_channels.end()){
 			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
 			return ;
