@@ -10,6 +10,8 @@ void Server::invite(int fd, std::stringstream& iss){
 	iss >> channel;
 	iss >> name;
 
+	channel = toLower(channel);
+	name = toLower(name);
 	if (channel.empty() || name.empty()){
 		this->sendMessage(fd, "Error :invalid parameters\r\n");
 		return ;

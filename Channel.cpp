@@ -46,6 +46,8 @@ void Channel::sendMessage(std::string msg, int fd){
 std::string Channel::getUsers(){
 	std::string users = "";
 	std::map<int, Client>::iterator it;
+	if (this->_operators.size() == 0)
+		this->setOwner();
 	for (it = this->_list.begin(); it != this->_list.end(); it++){
 		if (it->first == this->getOwner())
 			users += "@" + it->second.getNick() + " ";
@@ -55,6 +57,12 @@ std::string Channel::getUsers(){
 			users += it->second.getNick() + " ";
 	}
 	return users;
+}
+
+void Channel::setOwner(){
+	std::map<int, Client>::iterator it = this->_list.begin();
+	if (it != this->_list.end())
+		this->_operators.push_back(it->first);
 }
 
 void Channel::setTopic(std::string topic){this->_topic = topic;}

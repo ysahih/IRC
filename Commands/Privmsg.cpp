@@ -45,7 +45,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 				this->sendMessage(fd, ":" + this->list[fd].getNick() + " 442 PRIVMSG :You're not on that channel\r\n");
 				return ;
 			}
-			it->second.sendMessage(":" + this->list[fd].getNick() + " PRIVMSG " + name + " " + msg + "\r\n", fd);
+			it->second.sendMessage(":" + this->list[fd].getNick() + " PRIVMSG " + name + " :" + msg + "\r\n", fd);
 		}
 
 		else { //send to client
@@ -59,7 +59,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 				return ;
 			}
 			// this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n");
-			std::string mssg = ":" + this->list[fd].getNick() + " PRIVMSG " + name + " "  + msg + "\r\n";
+			std::string mssg = ":" + this->list[fd].getNick() + " PRIVMSG " + name + " :"  + msg + "\r\n";
 			this->sendMessage(tmp_fd, mssg);
 		}
 	}

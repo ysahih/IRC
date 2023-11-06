@@ -10,6 +10,7 @@ void Server::topic(int fd, std::stringstream& iss){
 	iss >> channel;
 	iss >> topic;
 
+	channel = toLower(channel);
 	if (channel.empty()){
 		this->sendMessage(fd, "Error :invalid parameters\r\n");
 		return ;

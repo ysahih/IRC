@@ -26,6 +26,7 @@ class Channel {
 		bool isPrivate();
 		bool isOperator(int fd);
 		bool clientExist(Client A);
+		void setOwner();
 		void addClient(Client A);
 		void kickClient(std::string name);
 		void kickOperator(int fd);

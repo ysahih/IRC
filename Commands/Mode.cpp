@@ -9,6 +9,8 @@ void Server::mode(int fd, std::stringstream& iss){
 	iss >> channel;
 	iss >> mode;
 	iss >> word;
+
+	channel = toLower(channel);
 	if ((mode[0] != '+' && mode[0] != '-') || mode.length() != 2){
 		this->sendMessage(fd, "Error :invalid mode\r\n");
 		return ;
@@ -33,7 +35,7 @@ void Server::mode(int fd, std::stringstream& iss){
 		this->sendMessage(fd, "482 " + this->list[fd].getNick() + " " + channel + " :You're not channel operator\r\n");
 		return ;
 	}
-	int tmp_fd = this->findClient(word);
+	int tmp_fd = this->findClient(toLower(word));
 	if (mode[0] == '+') {
 		switch (mode[1])
 		{

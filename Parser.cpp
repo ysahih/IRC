@@ -72,9 +72,12 @@ void Server::part(int fd, std::stringstream& iss){
 			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
 			return ;
 		}
+		// this->sendMessage(fd, ":" + it->second.getNick() + " PART " + it2->first + " :" + msg + "\r\n");
+		this->_channels[it2->first].sendMessage(":" + it->second.getNick() + " PART " + it2->first + " :" + msg + "\r\n", -1);
+		this->_channels[it2->first].sendMessage(":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n", -1);
+		this->_channels[it2->first].sendMessage(":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n", -1);
 		this->_channels[it2->first].kickOperator(fd);
 		this->_channels[it2->first].kickClient(it->second.getNick());
-
 	}
 }
 
@@ -99,7 +102,7 @@ void Server::parse(int fd, std::string line){
 	std::string cmd[12] = {"NICK", "USER", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", "PONG", "QUIT", "PART", "BOT"};
 	iss >> str;
 	int index = -1;
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < 12; ++i) {
         if (cmd[i] == str) {
             index = i;
             break;
