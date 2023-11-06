@@ -12,7 +12,7 @@ int Server::findClient(std::string name){
 
 void Server::sendMessage(int fd, std::string msg){
 
-    int bytesSent = send(fd, msg.c_str(), msg.length(), 0);
+    int bytesSent = write(fd, msg.c_str(), msg.length());
     if (bytesSent < 0)
         throw std::runtime_error("Failed to send response");
 }
@@ -60,7 +60,7 @@ void Server::part(int fd, std::stringstream& iss){
 		return ;
 	}
 	for (; it2 != channels.end(); it2++) {
-		if (it2->first[0] != '#'){
+		if (it2->first[0] != '#') {
 			this->sendMessage(fd, "Error :invalid channel name\r\n");
 			return ;
 		}
@@ -72,7 +72,6 @@ void Server::part(int fd, std::stringstream& iss){
 			this->sendMessage(fd, "442 " + it->second.getNick() + " " + it2->first + " :You're not on that channel\r\n");
 			return ;
 		}
-		// this->sendMessage(fd, ":" + it->second.getNick() + " PART " + it2->first + " :" + msg + "\r\n");
 		this->_channels[it2->first].sendMessage(":" + it->second.getNick() + " PART " + it2->first + " :" + msg + "\r\n", -1);
 		this->_channels[it2->first].kickClient(it->second.getNick());
 		this->_channels[it2->first].kickOperator(fd);
@@ -108,7 +107,6 @@ void Server::parse(int fd, std::string line){
             break;
         }
     }
-	
 	switch(index) {
 		case 0:
 			this->setNick(fd, iss);
@@ -145,8 +143,6 @@ void Server::parse(int fd, std::string line){
 		case 11:
 			this->bot(fd, iss);
 			break;
-		//case 12:
-			//hello there
 		default:
 			this->sendMessage (fd, "421 " + str + " :Unknown command\r\n");
 	}

@@ -102,7 +102,7 @@ void Server::launch() {
         for (int i = 1; i < fdnbr; i++){ /*through list of clients*/
             if (this->_fds[i].revents & POLLIN) {
                 char buffer[1024];
-                int bytesRead = recv(_fds[i].fd, buffer, 1024, 0);
+                int bytesRead = read(_fds[i].fd, buffer, 1024);
                 if (bytesRead < 0)
                     throw std::runtime_error("Failed to receive data");
                 if (bytesRead == 0)
