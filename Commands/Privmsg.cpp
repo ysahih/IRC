@@ -28,10 +28,9 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 		this->sendMessage(fd, ":" + this->list[fd].getNick() + "461 PRIVMSG :Not enough parameters\r\n");
 		return ;
 	}
-	if (msg[0] == ':')
-		msg = msg.substr(2);
-	else
-		msg = msg.substr(1);
+	msg = msg.substr(1);
+	if (msg[0] != ':')
+		msg = ":" + msg;
 	std::vector<std::string> names = nameSplit(name);
 	for(size_t i=0; i<names.size(); i++){
 		name = names[i];
@@ -45,7 +44,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 				this->sendMessage(fd, ":" + this->list[fd].getNick() + " 442 PRIVMSG :You're not on that channel\r\n");
 				return ;
 			}
-			it->second.sendMessage(":" + this->list[fd].getNick() + " PRIVMSG " + name + " :" + msg + "\r\n", fd);
+			it->second.sendMessage(":" + this->list[fd].getNick() + " PRIVMSG " + name + " " + msg + "\r\n", fd);
 		}
 
 		else { //send to client
@@ -58,8 +57,7 @@ void Server::privateMsg(int fd, std::stringstream& iss){
 				this->sendMessage(fd, ":" + this->list[fd].getNick() + " 400 PRIVMSG :Cannot send to yourself\r\n");
 				return ;
 			}
-			// this->sendMessage(tmp_fd, ":" + this->list[fd].getNick() + "!" + this->list[fd].getUser() + "@" + _hostname +  " PRIVMSG " + this->list[tmp_fd].getNick() + " :" + msg + "\r\n");
-			std::string mssg = ":" + this->list[fd].getNick() + " PRIVMSG " + name + " :"  + msg + "\r\n";
+			std::string mssg = ":" + this->list[fd].getNick() + " PRIVMSG " + name + " "  + msg + "\r\n";
 			this->sendMessage(tmp_fd, mssg);
 		}
 	}
