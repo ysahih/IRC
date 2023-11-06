@@ -74,10 +74,10 @@ void Server::part(int fd, std::stringstream& iss){
 		}
 		// this->sendMessage(fd, ":" + it->second.getNick() + " PART " + it2->first + " :" + msg + "\r\n");
 		this->_channels[it2->first].sendMessage(":" + it->second.getNick() + " PART " + it2->first + " :" + msg + "\r\n", -1);
+		this->_channels[it2->first].kickClient(it->second.getNick());
+		this->_channels[it2->first].kickOperator(fd);
 		this->_channels[it2->first].sendMessage(":" + this->_hostname + " 353 " + it->second.getNick() + " = " + it2->first + " :" + this->_channels[it2->first].getUsers() + "\r\n", -1);
 		this->_channels[it2->first].sendMessage(":" + this->_hostname + " 366 " + it->second.getNick() + " " + it2->first + " :End of /NAMES list\r\n", -1);
-		this->_channels[it2->first].kickOperator(fd);
-		this->_channels[it2->first].kickClient(it->second.getNick());
 	}
 }
 
@@ -145,9 +145,9 @@ void Server::parse(int fd, std::string line){
 		case 11:
 			this->bot(fd, iss);
 			break;
+		//case 12:
+			//hello there
 		default:
 			this->sendMessage (fd, "421 " + str + " :Unknown command\r\n");
 	}
 }
-
-

@@ -61,8 +61,10 @@ std::string Channel::getUsers(){
 
 void Channel::setOwner(){
 	std::map<int, Client>::iterator it = this->_list.begin();
-	if (it != this->_list.end())
+	if (it != this->_list.end()){
 		this->_operators.push_back(it->first);
+		this->sendMessage("MODE " + this->_name + " +o " + it->second.getNick() + "\r\n", -1);
+	}
 }
 
 void Channel::setTopic(std::string topic){this->_topic = topic;}
