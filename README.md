@@ -9,12 +9,6 @@ IRC clients connect to IRC servers in order connect with each other and to join 
 # Summary:
 This project is about creating your own IRC server. You will use an actual IRC client to connect to your server and test it. Internet is ruled by solid standards protocols that allow connected computers to interact with each other.
 
-# Project features:
-- You must be able to register and to authenticate; to define a nickname, a username.
-- You should be able to join a channel, send or receive private messages.
-- Every message sent by a client in a channel must be received by all of the clients who have joined this channel.
-- you can change channel modes and set operator privileges.
-
 * To install and run IRC on your local machine, follow these steps:
     Clone the repository into your machine using : git clone https://github.com/ysahih/IRC.
     Navigate into the repository directory using cd IRC.
@@ -22,6 +16,13 @@ This project is about creating your own IRC server. You will use an actual IRC c
     Your executable will be run as follows: `./ircserv <port> <password>`
         - port : The port number on which your IRC server will be listening to for incoming IRC connections.
         - password: The connection password. It will be needed by any IRC client that tries to connect to your server.
+
+# Project features:
+- You must be able to register and to authenticate; to define a nickname, a username.
+- You should be able to join a channel, send or receive private messages.
+- Every message sent by a client in a channel must be received by all of the clients who have joined this channel.
+- you can change channel modes and set operator privileges.
+
 
 # Configuration:
 - the IRC server in built with C++98.
